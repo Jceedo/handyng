@@ -46,7 +46,7 @@ const SAMPLE_MESSAGES = {
 };
 
 export default function App() {
-  const [view, setView] = useState("home");
+  const [view, setView] = useState("landing");
   const [dbProviders, setDbProviders] = useState([]);
   const [loadingProviders, setLoadingProviders] = useState(true);
 
@@ -529,6 +529,117 @@ export default function App() {
 
     .gold-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(212,168,70,0.3), transparent); margin: 0 20px; }
 
+    /* ── LANDING ── */
+    .landing { min-height: 100vh; display: flex; flex-direction: column; background: #0A0A0A; overflow: hidden; }
+
+    .landing-nav {
+      padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;
+      position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    }
+    .landing-nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #F5EDD8; }
+    .landing-nav-logo span { color: #D4A846; }
+    .landing-nav-btn {
+      padding: 8px 18px; border: 1px solid rgba(212,168,70,0.4); border-radius: 100px;
+      background: transparent; color: #D4A846; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .landing-nav-btn:hover { background: rgba(212,168,70,0.1); }
+
+    .landing-hero {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 100px 24px 40px;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,70,0.12) 0%, transparent 70%);
+      position: relative;
+    }
+    .landing-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 40% 40% at 50% 100%, rgba(212,168,70,0.06) 0%, transparent 70%);
+    }
+    .landing-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(212,168,70,0.1); border: 1px solid rgba(212,168,70,0.3);
+      border-radius: 100px; padding: 5px 14px; font-size: 12px; color: #D4A846;
+      margin-bottom: 24px; font-weight: 600; letter-spacing: 0.02em;
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .landing-h1 {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 42px;
+      line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 16px;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+    .landing-h1 em { color: #D4A846; font-style: normal; display: block; }
+    .landing-p {
+      font-size: 15px; color: #888; line-height: 1.7; max-width: 320px;
+      margin: 0 auto 36px; animation: fadeUp 0.6s ease 0.2s both;
+    }
+    .landing-cta-row {
+      display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+    .landing-cta-primary {
+      width: 100%; padding: 16px; background: #D4A846; color: #0A0A0A;
+      border: none; border-radius: 14px; font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .landing-cta-primary:hover { background: #e8bc55; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,168,70,0.3); }
+    .landing-cta-secondary {
+      width: 100%; padding: 15px; background: transparent; color: #F5EDD8;
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .landing-cta-secondary:hover { border-color: rgba(212,168,70,0.4); color: #D4A846; }
+
+    .landing-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: rgba(212,168,70,0.08);
+      border-top: 1px solid rgba(212,168,70,0.08);
+      border-bottom: 1px solid rgba(212,168,70,0.08);
+      animation: fadeUp 0.6s ease 0.4s both;
+    }
+    .landing-stat { padding: 20px 12px; text-align: center; background: #0A0A0A; }
+    .landing-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: #D4A846; }
+    .landing-stat-label { font-size: 11px; color: #666; margin-top: 3px; }
+
+    .landing-features { padding: 36px 24px; display: flex; flex-direction: column; gap: 14px; }
+    .landing-feature {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,70,0.1);
+      border-radius: 16px; padding: 16px;
+    }
+    .landing-feature-icon { font-size: 24px; flex-shrink: 0; }
+    .landing-feature-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    .landing-feature-desc { font-size: 13px; color: #777; line-height: 1.5; }
+
+    .landing-services { padding: 0 24px 36px; }
+    .landing-services-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 16px; text-align: center; }
+    .landing-services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .landing-service-pill {
+      background: rgba(212,168,70,0.07); border: 1px solid rgba(212,168,70,0.12);
+      border-radius: 12px; padding: 12px 6px;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .landing-service-pill-icon { font-size: 20px; }
+    .landing-service-pill-label { font-size: 10px; color: #888; text-align: center; font-weight: 500; }
+
+    .landing-footer {
+      padding: 24px; text-align: center; border-top: 1px solid rgba(212,168,70,0.08);
+    }
+    .landing-footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 6px; }
+    .landing-footer-logo span { color: #D4A846; }
+    .landing-footer-text { font-size: 12px; color: #555; }
+
+    .landing-bottom-cta {
+      padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 10px;
+      border-top: 1px solid rgba(212,168,70,0.08);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* ── AUTH ── */
     .auth-container { padding: 40px 24px 100px; display: flex; flex-direction: column; min-height: calc(100vh - 56px); }
     .auth-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; margin-bottom: 6px; }
@@ -749,7 +860,8 @@ export default function App() {
       <div className="app">
 
         {/* NAV */}
-        <div className="nav">
+        {view !== "landing" && (
+          <div className="nav">
           {view === "home" || view === "browse" || view === "register" || view === "auth" || view === "userprofile" || view === "bookings" ? (
             <div className="nav-logo">Handy<span>NG</span></div>
           ) : (
@@ -773,8 +885,128 @@ export default function App() {
             <div style={{ fontSize: 13, color: "#D4A846" }}>🔒 Secure Chat</div>
           )}
         </div>
+        )}
 
-        {/* ── HOME ── */}
+        {/* ── LANDING ── */}
+        {view === "landing" && (
+          <div style={{ overflowY: "auto", height: "100vh", background: "#0A0A0A" }}>
+
+            {/* NAV */}
+            <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,10,10,0.96)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(212,168,70,0.1)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#F5EDD8" }}>Handy<span style={{ color: "#D4A846" }}>NG</span></div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => { setAuthView("login"); setView("auth"); }} style={{ padding: "8px 16px", background: "transparent", border: "1px solid rgba(212,168,70,0.35)", borderRadius: 100, color: "#D4A846", fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Log In</button>
+                <button onClick={() => { setAuthView("signup"); setView("auth"); }} style={{ padding: "8px 16px", background: "#D4A846", border: "none", borderRadius: 100, color: "#0A0A0A", fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Sign Up</button>
+              </div>
+            </div>
+
+            {/* HERO */}
+            <div style={{ background: "radial-gradient(ellipse 100% 70% at 50% 0%, rgba(212,168,70,0.14) 0%, transparent 65%)", padding: "52px 24px 40px", textAlign: "center" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(212,168,70,0.1)", border: "1px solid rgba(212,168,70,0.3)", borderRadius: 100, padding: "5px 14px", fontSize: 12, color: "#D4A846", marginBottom: 20, fontWeight: 600 }}>🇳🇬 Nigeria's #1 Service Marketplace</div>
+              <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, lineHeight: 1.1, letterSpacing: -1, marginBottom: 14 }}>
+                List. Find. <span style={{ color: "#D4A846" }}>Connect.</span>
+              </h1>
+              <p style={{ fontSize: 14, color: "#888", lineHeight: 1.7, maxWidth: 300, margin: "0 auto 28px" }}>
+                A meeting point for skilled service providers and customers across Nigeria.
+              </p>
+
+              {/* Search bar */}
+              <div style={{ display: "flex", gap: 0, background: "#fff", borderRadius: 14, overflow: "hidden", maxWidth: 360, margin: "0 auto 16px", boxShadow: "0 4px 30px rgba(212,168,70,0.2)" }}>
+                <input
+                  placeholder="What service do you need?"
+                  style={{ flex: 1, border: "none", outline: "none", padding: "14px 16px", fontSize: 14, fontFamily: "DM Sans, sans-serif", color: "#0A0A0A", background: "transparent" }}
+                  onFocus={() => setView("browse")}
+                />
+                <button onClick={() => setView("browse")} style={{ padding: "14px 20px", background: "#D4A846", border: "none", cursor: "pointer", fontSize: 18 }}>🔍</button>
+              </div>
+
+              {/* Popular tags */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 32 }}>
+                {["Electrician", "Plumber", "Cleaner", "Mechanic", "Carpenter"].map(s => (
+                  <button key={s} onClick={() => { setSelectedService(SERVICES.find(x => x.label === s)?.id || ""); setView("browse"); }} style={{ padding: "6px 14px", background: "rgba(212,168,70,0.08)", border: "1px solid rgba(212,168,70,0.2)", borderRadius: 100, fontSize: 12, color: "#D4A846", cursor: "pointer", fontWeight: 500 }}>{s}</button>
+                ))}
+              </div>
+
+              {/* Stats */}
+              <div style={{ display: "flex", justifyContent: "center", gap: 32 }}>
+                {[["1,200+", "Providers"], ["8", "Cities"], ["4.8★", "Avg Rating"]].map(([num, label]) => (
+                  <div key={label} style={{ textAlign: "center" }}>
+                    <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, color: "#D4A846" }}>{num}</div>
+                    <div style={{ fontSize: 11, color: "#666", marginTop: 2 }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CATEGORIES */}
+            <div style={{ padding: "32px 20px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18 }}>Featured Categories</div>
+                <span onClick={() => setView("browse")} style={{ fontSize: 13, color: "#D4A846", cursor: "pointer" }}>View All →</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                {[
+                  { id: "electrician", icon: "⚡", label: "Electrician", bg: "#1a1200" },
+                  { id: "plumber", icon: "🔧", label: "Plumber", bg: "#0f1520" },
+                  { id: "carpenter", icon: "🪚", label: "Carpenter", bg: "#1a0f00" },
+                  { id: "cleaner", icon: "🧹", label: "Cleaner", bg: "#0f1a10" },
+                  { id: "mechanic", icon: "🔩", label: "Mechanic", bg: "#1a1000" },
+                  { id: "ac_repair", icon: "❄️", label: "AC Repair", bg: "#0f1520" },
+                ].map(cat => (
+                  <div key={cat.id} onClick={() => { setSelectedService(cat.id); setView("browse"); }}
+                    style={{ background: cat.bg, border: "1px solid rgba(212,168,70,0.12)", borderRadius: 16, padding: "20px 12px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" }}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>{cat.icon}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#aaa" }}>{cat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* HOW IT WORKS */}
+            <div style={{ padding: "36px 20px 0" }}>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 6, textAlign: "center" }}>How HandyNG Works</div>
+              <div style={{ fontSize: 13, color: "#666", textAlign: "center", marginBottom: 24 }}>Simple. Fast. Reliable.</div>
+              {[
+                { num: "01", title: "Find a Provider", desc: "Search by service and city. Browse verified profiles with ratings and reviews.", icon: "🔍" },
+                { num: "02", title: "Connect & Chat", desc: "Message providers directly in-app. No need to share your phone number.", icon: "💬" },
+                { num: "03", title: "Book & Get it Done", desc: "Send a booking request, agree on details, and get the job done.", icon: "✅" },
+              ].map(step => (
+                <div key={step.num} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 20, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(212,168,70,0.1)", borderRadius: 16, padding: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(212,168,70,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{step.icon}</div>
+                  <div>
+                    <div style={{ fontSize: 11, color: "#D4A846", fontWeight: 700, marginBottom: 4 }}>{step.num}</div>
+                    <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{step.title}</div>
+                    <div style={{ fontSize: 13, color: "#777", lineHeight: 1.6 }}>{step.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ARE YOU A PROVIDER */}
+            <div style={{ margin: "32px 20px 0", background: "linear-gradient(135deg, rgba(212,168,70,0.12), rgba(212,168,70,0.04))", border: "1px solid rgba(212,168,70,0.25)", borderRadius: 20, padding: "28px 20px", textAlign: "center" }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🔧</div>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Are you a service provider?</div>
+              <div style={{ fontSize: 13, color: "#888", lineHeight: 1.7, marginBottom: 20 }}>Join thousands of skilled professionals already earning on HandyNG. Register for free and start getting hired today.</div>
+              <button onClick={() => { setView("register"); setRegStep(1); setRegSuccess(false); }} style={{ padding: "13px 28px", background: "#D4A846", border: "none", borderRadius: 12, fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 14, color: "#0A0A0A", cursor: "pointer" }}>Register as a Provider</button>
+            </div>
+
+            {/* BOTTOM CTA */}
+            <div style={{ padding: "32px 20px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <button onClick={() => { setAuthView("signup"); setView("auth"); }} style={{ width: "100%", padding: 15, background: "#D4A846", border: "none", borderRadius: 14, fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 15, color: "#0A0A0A", cursor: "pointer" }}>Get Started — It's Free</button>
+              <button onClick={() => setView("home")} style={{ width: "100%", padding: 14, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 14, color: "#888", cursor: "pointer" }}>Browse Without Account</button>
+            </div>
+
+            {/* FOOTER */}
+            <div style={{ padding: "20px 24px 40px", borderTop: "1px solid rgba(212,168,70,0.08)", textAlign: "center" }}>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 6 }}>Handy<span style={{ color: "#D4A846" }}>NG</span></div>
+              <div style={{ fontSize: 12, color: "#555", marginBottom: 12 }}>Nigeria's Trusted Service Network</div>
+              <div style={{ fontSize: 11, color: "#444" }}>© {new Date().getFullYear()} HandyNG. All rights reserved.</div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ── HOME ── */}        {/* ── HOME ── */}
         {view === "home" && (
           <div style={{ paddingBottom: 80 }}>
             <div className="hero">
@@ -1342,7 +1574,7 @@ export default function App() {
         )}
 
         {/* BOTTOM BAR */}
-        {view !== "chat" && (
+        {view !== "chat" && view !== "landing" && (
           <div className="bottom-bar">
             <button className={`bottom-tab ${view === "home" ? "active" : ""}`} onClick={() => setView("home")}>
               <span className="bottom-tab-icon">🏠</span>
