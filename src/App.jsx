@@ -282,32 +282,108 @@ export default function App() {
 
     body {
       font-family: 'DM Sans', sans-serif;
-      background: #0A0A0A;
-      color: #F5EDD8;
+      background: #FAFAF7;
+      color: #1A1400;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    .app { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; background: #0A0A0A; }
+    .app { max-width: 100%; margin: 0 auto; min-height: 100vh; position: relative; background: #FAFAF7; }
+
+    /* ── RESPONSIVE LAYOUT ── */
+    @media (min-width: 768px) {
+      .app { max-width: 100%; }
+
+      /* Nav */
+      .nav { padding: 16px 40px; }
+
+      /* Hero */
+      .hero { padding: 60px 40px 40px; max-width: 700px; margin: 0 auto; }
+      .hero h1 { font-size: 42px; }
+
+      /* Stats */
+      .stats-row { max-width: 800px; margin: 0 auto; padding: 24px 40px 0; grid-template-columns: repeat(3, 1fr); }
+
+      /* Section */
+      .section { padding: 32px 40px 0; max-width: 900px; margin: 0 auto; }
+
+      /* Services grid - 6 columns on desktop */
+      .services-grid { grid-template-columns: repeat(6, 1fr); }
+
+      /* Browse */
+      .browse-header { padding: 20px 40px; max-width: 900px; margin: 0 auto; }
+      .providers-list { padding: 8px 40px 100px; max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+      /* Provider cards in grid */
+      .provider-card { margin-bottom: 0 !important; }
+
+      /* Profile */
+      .profile-hero { padding: 40px 40px 28px; }
+      .profile-section { padding: 24px 40px; max-width: 700px; margin: 0 auto; }
+      .profile-cta { padding: 24px 40px 60px; max-width: 700px; margin: 0 auto; }
+      .profile-stats { max-width: 700px; margin: 0 auto; }
+
+      /* Chat */
+      .chat-header { padding: 16px 40px; max-width: 700px; margin: 0 auto; }
+      .chat-body { padding: 24px 40px; max-width: 700px; margin: 0 auto; }
+      .chat-input-area { padding: 16px 40px 32px; max-width: 700px; margin: 0 auto; }
+
+      /* Bottom bar */
+      .bottom-bar { max-width: 100%; background: rgba(250,250,247,0.97); padding: 12px 40px 16px; justify-content: center; gap: 40px; }
+      .bottom-tab { padding: 8px 24px; }
+      .bottom-tab-label { font-size: 12px; }
+
+      /* Auth */
+      .auth-container { max-width: 480px; margin: 0 auto; padding: 40px 40px 100px; }
+
+      /* Register */
+      .reg-container { max-width: 560px; margin: 0 auto; }
+
+      /* Bookings */
+      .bookings-container { max-width: 700px; margin: 0 auto; }
+
+      /* Profile tab */
+      .profile-tab-container { max-width: 600px; margin: 0 auto; }
+
+      /* Booking modal */
+      .booking-modal { max-width: 520px; margin: 0 auto; border-radius: 24px; margin-bottom: 40px; }
+    }
+
+    @media (min-width: 1024px) {
+      .nav { padding: 18px 80px; }
+
+      .hero { padding: 80px 80px 50px; max-width: 800px; }
+      .hero h1 { font-size: 52px; }
+
+      .stats-row { max-width: 1000px; padding: 28px 80px 0; }
+      .section { padding: 40px 80px 0; max-width: 1100px; }
+      .services-grid { grid-template-columns: repeat(6, 1fr); gap: 14px; }
+
+      .browse-header { padding: 24px 80px; max-width: 1100px; }
+      .providers-list { padding: 8px 80px 100px; max-width: 1100px; grid-template-columns: repeat(3, 1fr); }
+
+      /* Landing page desktop */
+      .bottom-bar { padding: 14px 80px 18px; gap: 60px; }
+    }
 
     /* ── TOP NAV ── */
     .nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(10,10,10,0.94);
+      background: rgba(250,250,247,0.96);
       backdrop-filter: blur(16px);
       padding: 14px 20px;
       display: flex; align-items: center; justify-content: space-between;
       border-bottom: 1px solid rgba(212,168,70,0.12);
     }
-    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #F5EDD8; letter-spacing: -0.5px; }
+    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #1A1400; letter-spacing: -0.5px; }
     .nav-logo span { color: #D4A846; }
-    .nav-back { display: flex; align-items: center; gap: 6px; color: #888; font-size: 14px; cursor: pointer; background: none; border: none; color: #888; }
-    .nav-back:hover { color: #F5EDD8; }
+    .nav-back { display: flex; align-items: center; gap: 6px; color: #888; font-size: 14px; cursor: pointer; background: none; border: none; color: #777; }
+    .nav-back:hover { color: #1A1400; }
 
     /* ── HOME ── */
     .hero {
       padding: 40px 20px 28px;
-      background: linear-gradient(160deg, #0A0A0A 0%, #1a1200 100%);
+      background: linear-gradient(160deg, #FAFAF7 0%, #FFF8E7 100%);
     }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
@@ -318,20 +394,20 @@ export default function App() {
     .hero-badge::before { content: '●'; font-size: 8px; }
     .hero h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.15; margin-bottom: 10px; letter-spacing: -1px; }
     .hero h1 em { color: #D4A846; font-style: normal; }
-    .hero p { color: #888; font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+    .hero p { color: #777; font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
 
     .search-bar {
       display: flex; gap: 8px;
-      background: rgba(255,255,255,0.04);
+      background: rgba(0,0,0,0.04);
       border: 1px solid rgba(212,168,70,0.15);
       border-radius: 14px; padding: 10px 14px;
       align-items: center; margin-bottom: 12px;
     }
     .search-bar input {
-      background: none; border: none; outline: none; color: #F5EDD8;
+      background: none; border: none; outline: none; color: #1A1400;
       font-size: 14px; flex: 1; font-family: 'DM Sans', sans-serif;
     }
-    .search-bar input::placeholder { color: #555; }
+    .search-bar input::placeholder { color: #999; }
     .search-bar-icon { color: #D4A846; font-size: 16px; }
 
     .location-row {
@@ -349,12 +425,12 @@ export default function App() {
 
     /* ── SERVICES GRID ── */
     .section { padding: 24px 20px 0; }
-    .section-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; color: #1A1400; }
     .section-title span { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; color: #D4A846; cursor: pointer; }
 
     .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .service-tile {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,70,0.1);
+      background: rgba(0,0,0,0.03); border: 1px solid rgba(212,168,70,0.1);
       border-radius: 14px; padding: 14px 8px;
       display: flex; flex-direction: column; align-items: center; gap: 6px;
       cursor: pointer; transition: all 0.2s;
@@ -390,7 +466,7 @@ export default function App() {
 
     .providers-list { padding: 8px 20px 100px; display: flex; flex-direction: column; gap: 12px; }
     .provider-card {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,70,0.1);
+      background: rgba(0,0,0,0.03); border: 1px solid rgba(212,168,70,0.1);
       border-radius: 18px; padding: 16px; cursor: pointer;
       transition: all 0.2s;
     }
@@ -401,7 +477,7 @@ export default function App() {
       width: 48px; height: 48px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px;
-      color: #F5EDD8; flex-shrink: 0; border: 1px solid rgba(212,168,70,0.2);
+      color: #1A1400; flex-shrink: 0; border: 1px solid rgba(212,168,70,0.2);
     }
     .provider-info { flex: 1; }
     .provider-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
@@ -428,11 +504,11 @@ export default function App() {
       cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em;
     }
     .chat-btn:hover { background: #e8bc55; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(212,168,70,0.3); }
-    .chat-btn:disabled { background: rgba(255,255,255,0.08); color: #444; cursor: not-allowed; transform: none; box-shadow: none; }
+    .chat-btn:disabled { background: rgba(0,0,0,0.06); color: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
 
     /* ── PROFILE ── */
     .profile-hero {
-      background: linear-gradient(160deg, #1a1200, #0A0A0A);
+      background: linear-gradient(160deg, #FFF8E7, #FAFAF7);
       padding: 24px 20px 20px;
       display: flex; flex-direction: column; align-items: center; text-align: center;
     }
@@ -440,21 +516,21 @@ export default function App() {
       width: 80px; height: 80px; border-radius: 22px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px;
-      color: #F5EDD8; margin-bottom: 14px;
+      color: #1A1400; margin-bottom: 14px;
       border: 2px solid rgba(212,168,70,0.4);
     }
     .profile-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 4px; }
     .profile-service { font-size: 13px; color: #D4A846; margin-bottom: 8px; font-weight: 500; }
     .profile-location { font-size: 13px; color: #666; }
 
-    .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(212,168,70,0.08); border-top: 1px solid rgba(212,168,70,0.1); }
-    .profile-stat { padding: 16px; text-align: center; background: #0A0A0A; }
+    .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(212,168,70,0.1); border-top: 1px solid rgba(212,168,70,0.1); }
+    .profile-stat { padding: 16px; text-align: center; background: #FAFAF7; }
     .profile-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #D4A846; }
     .profile-stat-label { font-size: 11px; color: #666; margin-top: 2px; }
 
-    .profile-section { padding: 20px; border-bottom: 1px solid rgba(212,168,70,0.08); }
+    .profile-section { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); }
     .profile-section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
-    .bio-text { font-size: 14px; color: #aaa; line-height: 1.7; }
+    .bio-text { font-size: 14px; color: #666; line-height: 1.7; }
     .profile-tags { display: flex; gap: 8px; flex-wrap: wrap; }
     .profile-tag { font-size: 12px; color: #D4A846; background: rgba(212,168,70,0.1); border: 1px solid rgba(212,168,70,0.25); border-radius: 100px; padding: 5px 12px; }
 
@@ -470,7 +546,7 @@ export default function App() {
       width: 40px; height: 40px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px;
-      color: #F5EDD8; border: 1px solid rgba(212,168,70,0.2);
+      color: #1A1400; border: 1px solid rgba(212,168,70,0.2);
     }
     .chat-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
     .chat-status { font-size: 12px; color: #D4A846; }
@@ -481,21 +557,21 @@ export default function App() {
     .msg.provider { align-self: flex-start; align-items: flex-start; }
     .msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
     .msg.user .msg-bubble { background: #D4A846; color: #0A0A0A; border-bottom-right-radius: 4px; font-weight: 500; }
-    .msg.provider .msg-bubble { background: rgba(255,255,255,0.07); color: #F5EDD8; border-bottom-left-radius: 4px; }
-    .msg-time { font-size: 10px; color: #555; }
+    .msg.provider .msg-bubble { background: rgba(0,0,0,0.05); color: #1A1400; border-bottom-left-radius: 4px; }
+    .msg-time { font-size: 10px; color: #999; }
 
     .chat-input-area {
       padding: 12px 16px 28px;
       border-top: 1px solid rgba(212,168,70,0.1);
       display: flex; gap: 10px; align-items: center;
-      background: rgba(10,10,10,0.97);
+      background: rgba(250,250,247,0.97);
     }
     .chat-input {
-      flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,168,70,0.15);
-      border-radius: 12px; padding: 10px 14px; color: #F5EDD8; font-size: 14px;
+      flex: 1; background: rgba(0,0,0,0.04); border: 1px solid rgba(212,168,70,0.15);
+      border-radius: 12px; padding: 10px 14px; color: #1A1400; font-size: 14px;
       font-family: 'DM Sans', sans-serif; outline: none;
     }
-    .chat-input::placeholder { color: #555; }
+    .chat-input::placeholder { color: #999; }
     .send-btn {
       width: 42px; height: 42px; background: #D4A846; border: none; border-radius: 12px;
       cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
@@ -506,19 +582,19 @@ export default function App() {
     .empty-state { padding: 60px 20px; text-align: center; }
     .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
     .empty-state h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; margin-bottom: 8px; }
-    .empty-state p { font-size: 14px; color: #666; }
+    .empty-state p { font-size: 14px; color: #888; }
 
     .bottom-bar {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: 430px;
-      background: rgba(10,10,10,0.97); backdrop-filter: blur(16px);
+      background: rgba(250,250,247,0.97); backdrop-filter: blur(16px);
       border-top: 1px solid rgba(212,168,70,0.1);
       display: flex; justify-content: space-around; padding: 10px 0 16px;
       z-index: 99;
     }
     .bottom-tab {
       display: flex; flex-direction: column; align-items: center; gap: 3px;
-      cursor: pointer; color: #444; transition: color 0.2s; background: none; border: none;
+      cursor: pointer; color: #aaa; transition: color 0.2s; background: none; border: none;
       padding: 4px 16px;
     }
     .bottom-tab.active { color: #D4A846; }
@@ -530,13 +606,13 @@ export default function App() {
     .gold-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(212,168,70,0.3), transparent); margin: 0 20px; }
 
     /* ── LANDING ── */
-    .landing { min-height: 100vh; display: flex; flex-direction: column; background: #0A0A0A; overflow: hidden; }
+    .landing { min-height: 100vh; display: flex; flex-direction: column; background: #FAFAF7; overflow: hidden; }
 
     .landing-nav {
       padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;
       position: absolute; top: 0; left: 0; right: 0; z-index: 10;
     }
-    .landing-nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #F5EDD8; }
+    .landing-nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #1A1400; }
     .landing-nav-logo span { color: #D4A846; }
     .landing-nav-btn {
       padding: 8px 18px; border: 1px solid rgba(212,168,70,0.4); border-radius: 100px;
@@ -584,8 +660,8 @@ export default function App() {
     }
     .landing-cta-primary:hover { background: #e8bc55; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,168,70,0.3); }
     .landing-cta-secondary {
-      width: 100%; padding: 15px; background: transparent; color: #F5EDD8;
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+      width: 100%; padding: 15px; background: transparent; color: #1A1400;
+      border: 1px solid rgba(0,0,0,0.1); border-radius: 14px;
       font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
       cursor: pointer; transition: all 0.2s;
     }
@@ -593,19 +669,19 @@ export default function App() {
 
     .landing-stats {
       display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 1px; background: rgba(212,168,70,0.08);
-      border-top: 1px solid rgba(212,168,70,0.08);
-      border-bottom: 1px solid rgba(212,168,70,0.08);
+      gap: 1px; background: rgba(212,168,70,0.1);
+      border-top: 1px solid rgba(0,0,0,0.08);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
       animation: fadeUp 0.6s ease 0.4s both;
     }
-    .landing-stat { padding: 20px 12px; text-align: center; background: #0A0A0A; }
+    .landing-stat { padding: 20px 12px; text-align: center; background: #FAFAF7; }
     .landing-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: #D4A846; }
     .landing-stat-label { font-size: 11px; color: #666; margin-top: 3px; }
 
     .landing-features { padding: 36px 24px; display: flex; flex-direction: column; gap: 14px; }
     .landing-feature {
       display: flex; align-items: flex-start; gap: 14px;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,70,0.1);
+      background: rgba(0,0,0,0.03); border: 1px solid rgba(212,168,70,0.1);
       border-radius: 16px; padding: 16px;
     }
     .landing-feature-icon { font-size: 24px; flex-shrink: 0; }
@@ -624,15 +700,15 @@ export default function App() {
     .landing-service-pill-label { font-size: 10px; color: #888; text-align: center; font-weight: 500; }
 
     .landing-footer {
-      padding: 24px; text-align: center; border-top: 1px solid rgba(212,168,70,0.08);
+      padding: 24px; text-align: center; border-top: 1px solid rgba(0,0,0,0.08);
     }
     .landing-footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 6px; }
     .landing-footer-logo span { color: #D4A846; }
-    .landing-footer-text { font-size: 12px; color: #555; }
+    .landing-footer-text { font-size: 12px; color: #999; }
 
     .landing-bottom-cta {
       padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 10px;
-      border-top: 1px solid rgba(212,168,70,0.08);
+      border-top: 1px solid rgba(0,0,0,0.08);
     }
 
     @keyframes fadeUp {
@@ -648,32 +724,32 @@ export default function App() {
     .auth-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; margin-bottom: 6px; }
     .auth-sub { font-size: 13px; color: #777; margin-bottom: 28px; }
 
-    .role-toggle { display: flex; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,168,70,0.15); border-radius: 12px; padding: 4px; margin-bottom: 20px; gap: 4px; }
+    .role-toggle { display: flex; background: rgba(0,0,0,0.04); border: 1px solid rgba(212,168,70,0.15); border-radius: 12px; padding: 4px; margin-bottom: 20px; gap: 4px; }
     .role-btn { flex: 1; padding: 10px; border: none; border-radius: 9px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; background: transparent; color: #666; }
     .role-btn.active { background: #D4A846; color: #0A0A0A; }
 
     .auth-error { background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.3); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #ff8080; margin-bottom: 16px; }
 
     .auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
-    .auth-divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
-    .auth-divider-text { font-size: 12px; color: #555; }
+    .auth-divider-line { flex: 1; height: 1px; background: rgba(0,0,0,0.06); }
+    .auth-divider-text { font-size: 12px; color: #999; }
 
     .auth-switch { text-align: center; font-size: 13px; color: #666; margin-top: 20px; }
     .auth-switch span { color: #D4A846; font-weight: 600; cursor: pointer; }
 
     /* ── USER PROFILE TAB ── */
     .profile-tab-container { padding: 24px 20px 100px; }
-    .profile-tab-header { display: flex; flex-direction: column; align-items: center; padding: 28px 20px; background: linear-gradient(160deg, #1a1200, #0A0A0A); border-radius: 20px; margin-bottom: 20px; text-align: center; }
+    .profile-tab-header { display: flex; flex-direction: column; align-items: center; padding: 28px 20px; background: linear-gradient(160deg, #FFF8E7, #FAFAF7); border-radius: 20px; margin-bottom: 20px; text-align: center; }
     .profile-tab-avatar { width: 72px; height: 72px; border-radius: 20px; background: #D4A846; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: #0A0A0A; margin-bottom: 14px; }
     .profile-tab-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 4px; }
     .profile-tab-email { font-size: 13px; color: #666; margin-bottom: 8px; }
     .profile-tab-role { font-size: 11px; background: rgba(212,168,70,0.15); color: #D4A846; border: 1px solid rgba(212,168,70,0.25); padding: 3px 10px; border-radius: 100px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
     .profile-tab-menu { display: flex; flex-direction: column; gap: 10px; }
-    .profile-menu-item { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,70,0.1); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+    .profile-menu-item { display: flex; align-items: center; gap: 14px; background: rgba(0,0,0,0.03); border: 1px solid rgba(212,168,70,0.1); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.2s; }
     .profile-menu-item:hover { border-color: rgba(212,168,70,0.3); background: rgba(212,168,70,0.05); }
     .profile-menu-icon { font-size: 20px; }
     .profile-menu-label { font-size: 14px; font-weight: 500; flex: 1; }
-    .profile-menu-arrow { color: #555; font-size: 14px; }
+    .profile-menu-arrow { color: #999; font-size: 14px; }
     .logout-btn { width: 100%; margin-top: 16px; padding: 14px; background: rgba(255,80,80,0.1); color: #ff8080; border: 1px solid rgba(255,80,80,0.2); border-radius: 12px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; }
     .logout-btn:hover { background: rgba(255,80,80,0.2); }
 
@@ -681,7 +757,7 @@ export default function App() {
     .bookings-container { padding: 20px 20px 100px; }
     .bookings-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 4px; }
     .bookings-sub { font-size: 13px; color: #666; margin-bottom: 20px; }
-    .booking-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,168,70,0.12); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .booking-card { background: rgba(0,0,0,0.03); border: 1px solid rgba(212,168,70,0.12); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
     .booking-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
     .booking-provider { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
     .booking-service { font-size: 12px; color: #888; margin-top: 2px; }
@@ -689,8 +765,8 @@ export default function App() {
     .booking-status.pending { background: rgba(212,168,70,0.15); color: #D4A846; }
     .booking-status.accepted { background: rgba(0,200,100,0.15); color: #00c864; }
     .booking-status.declined { background: rgba(255,80,80,0.15); color: #ff8080; }
-    .booking-message { font-size: 13px; color: #aaa; line-height: 1.6; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 10px; }
-    .booking-meta { font-size: 11px; color: #555; }
+    .booking-message { font-size: 13px; color: #aaa; line-height: 1.6; padding: 10px 12px; background: rgba(0,0,0,0.03); border-radius: 10px; margin-bottom: 10px; }
+    .booking-meta { font-size: 11px; color: #999; }
     .booking-actions { display: flex; gap: 8px; margin-top: 12px; }
     .booking-accept-btn { flex: 1; padding: 10px; background: rgba(0,200,100,0.15); color: #00c864; border: 1px solid rgba(0,200,100,0.25); border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
     .booking-accept-btn:hover { background: rgba(0,200,100,0.25); }
@@ -699,7 +775,7 @@ export default function App() {
 
     /* ── BOOKING REQUEST MODAL ── */
     .booking-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
-    .booking-modal { background: #111108; border: 1px solid rgba(212,168,70,0.2); border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 430px; }
+    .booking-modal { background: #FFFFF5; border: 1px solid rgba(212,168,70,0.2); border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 430px; }
     .booking-modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 4px; }
     .booking-modal-sub { font-size: 13px; color: #777; margin-bottom: 20px; }
     .booking-modal-success { text-align: center; padding: 20px 0; }
@@ -726,35 +802,35 @@ export default function App() {
     .field-group { margin-bottom: 18px; }
     .field-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; display: block; }
     .field-input {
-      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,168,70,0.15);
-      border-radius: 12px; padding: 12px 14px; color: #F5EDD8; font-size: 14px;
+      width: 100%; background: rgba(0,0,0,0.04); border: 1px solid rgba(212,168,70,0.15);
+      border-radius: 12px; padding: 12px 14px; color: #1A1400; font-size: 14px;
       font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
     }
     .field-input:focus { border-color: rgba(212,168,70,0.5); background: rgba(212,168,70,0.04); }
     .field-input.error { border-color: rgba(255,80,80,0.5); }
-    .field-input::placeholder { color: #444; }
+    .field-input::placeholder { color: #aaa; }
     .field-error { font-size: 11px; color: #ff6b6b; margin-top: 5px; }
 
     .field-select {
-      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,168,70,0.15);
-      border-radius: 12px; padding: 12px 14px; color: #F5EDD8; font-size: 14px;
+      width: 100%; background: rgba(0,0,0,0.04); border: 1px solid rgba(212,168,70,0.15);
+      border-radius: 12px; padding: 12px 14px; color: #1A1400; font-size: 14px;
       font-family: 'DM Sans', sans-serif; outline: none; appearance: none;
       cursor: pointer; transition: border-color 0.2s;
     }
     .field-select:focus { border-color: rgba(212,168,70,0.5); }
     .field-select.error { border-color: rgba(255,80,80,0.5); }
-    .field-select option { background: #1a1200; color: #F5EDD8; }
+    .field-select option { background: #FFF8E7; color: #1A1400; }
 
     .field-textarea {
-      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,168,70,0.15);
-      border-radius: 12px; padding: 12px 14px; color: #F5EDD8; font-size: 14px;
+      width: 100%; background: rgba(0,0,0,0.04); border: 1px solid rgba(212,168,70,0.15);
+      border-radius: 12px; padding: 12px 14px; color: #1A1400; font-size: 14px;
       font-family: 'DM Sans', sans-serif; outline: none; resize: none; min-height: 100px;
       transition: border-color 0.2s; line-height: 1.6;
     }
     .field-textarea:focus { border-color: rgba(212,168,70,0.5); background: rgba(212,168,70,0.04); }
     .field-textarea.error { border-color: rgba(255,80,80,0.5); }
-    .field-textarea::placeholder { color: #444; }
-    .char-count { font-size: 11px; color: #555; text-align: right; margin-top: 4px; }
+    .field-textarea::placeholder { color: #aaa; }
+    .char-count { font-size: 11px; color: #999; text-align: right; margin-top: 4px; }
 
     .price-row { display: flex; gap: 10px; }
     .price-row .field-input { flex: 1; }
@@ -789,24 +865,24 @@ export default function App() {
     .reg-btn:hover { background: #e8bc55; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(212,168,70,0.3); }
     .reg-btn-outline {
       width: 100%; padding: 13px; background: transparent; color: #888;
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;
       font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer;
       transition: all 0.2s; margin-top: 10px;
     }
-    .reg-btn-outline:hover { color: #F5EDD8; border-color: rgba(255,255,255,0.2); }
+    .reg-btn-outline:hover { color: #1A1400; border-color: rgba(255,255,255,0.2); }
 
     .success-screen { padding: 60px 24px; text-align: center; }
     .success-icon { font-size: 64px; margin-bottom: 20px; }
     .success-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; margin-bottom: 10px; }
     .success-sub { font-size: 14px; color: #888; line-height: 1.7; margin-bottom: 32px; }
     .success-card {
-      background: rgba(212,168,70,0.08); border: 1px solid rgba(212,168,70,0.2);
+      background: rgba(212,168,70,0.1); border: 1px solid rgba(212,168,70,0.2);
       border-radius: 18px; padding: 20px; text-align: left; margin-bottom: 24px;
     }
-    .success-card-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(212,168,70,0.08); font-size: 13px; }
+    .success-card-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.08); font-size: 13px; }
     .success-card-row:last-child { border-bottom: none; }
     .success-card-label { color: #777; }
-    .success-card-value { color: #F5EDD8; font-weight: 500; }
+    .success-card-value { color: #1A1400; font-weight: 500; }
   `;
 
   const fetchBookings = async () => {
@@ -870,7 +946,7 @@ export default function App() {
             </button>
           )}
           {(view === "home" || view === "browse") && (
-            <div style={{ fontSize: 13, color: "#666" }}>🇳🇬 Nigeria</div>
+            <div style={{ fontSize: 13, color: "#888" }}>🇳🇬 Nigeria</div>
           )}
           {view === "register" && (
             <div style={{ fontSize: 13, color: "#D4A846" }}>Provider Sign Up</div>
@@ -889,11 +965,11 @@ export default function App() {
 
         {/* ── LANDING ── */}
         {view === "landing" && (
-          <div style={{ overflowY: "auto", height: "100vh", background: "#0A0A0A" }}>
+          <div style={{ overflowY: "auto", height: "100vh", background: "#FAFAF7" }}>
 
             {/* NAV */}
-            <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,10,10,0.96)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(212,168,70,0.1)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#F5EDD8" }}>Handy<span style={{ color: "#D4A846" }}>NG</span></div>
+            <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,250,247,0.96)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(0,0,0,0.08)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#1A1400" }}>Handy<span style={{ color: "#D4A846" }}>NG</span></div>
               <div style={{ display: "flex", gap: 10 }}>
                 <button onClick={() => { setAuthView("login"); setView("auth"); }} style={{ padding: "8px 16px", background: "transparent", border: "1px solid rgba(212,168,70,0.35)", borderRadius: 100, color: "#D4A846", fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Log In</button>
                 <button onClick={() => { setAuthView("signup"); setView("auth"); }} style={{ padding: "8px 16px", background: "#D4A846", border: "none", borderRadius: 100, color: "#0A0A0A", fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Sign Up</button>
@@ -903,15 +979,15 @@ export default function App() {
             {/* HERO */}
             <div style={{ background: "radial-gradient(ellipse 100% 70% at 50% 0%, rgba(212,168,70,0.14) 0%, transparent 65%)", padding: "52px 24px 40px", textAlign: "center" }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(212,168,70,0.1)", border: "1px solid rgba(212,168,70,0.3)", borderRadius: 100, padding: "5px 14px", fontSize: 12, color: "#D4A846", marginBottom: 20, fontWeight: 600 }}>🇳🇬 Nigeria's #1 Service Marketplace</div>
-              <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, lineHeight: 1.1, letterSpacing: -1, marginBottom: 14 }}>
+              <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.1, letterSpacing: -1, marginBottom: 14, color: "#1A1400" }}>
                 List. Find. <span style={{ color: "#D4A846" }}>Connect.</span>
               </h1>
-              <p style={{ fontSize: 14, color: "#888", lineHeight: 1.7, maxWidth: 300, margin: "0 auto 28px" }}>
+              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, maxWidth: 300, margin: "0 auto 28px" }}>
                 A meeting point for skilled service providers and customers across Nigeria.
               </p>
 
               {/* Search bar */}
-              <div style={{ display: "flex", gap: 0, background: "#fff", borderRadius: 14, overflow: "hidden", maxWidth: 360, margin: "0 auto 16px", boxShadow: "0 4px 30px rgba(212,168,70,0.2)" }}>
+              <div style={{ display: "flex", gap: 0, background: "#fff", borderRadius: 14, overflow: "hidden", maxWidth: "min(560px, 90vw)", margin: "0 auto 16px", boxShadow: "0 4px 30px rgba(212,168,70,0.2)" }}>
                 <input
                   placeholder="What service do you need?"
                   style={{ flex: 1, border: "none", outline: "none", padding: "14px 16px", fontSize: 14, fontFamily: "DM Sans, sans-serif", color: "#0A0A0A", background: "transparent" }}
@@ -939,43 +1015,43 @@ export default function App() {
             </div>
 
             {/* CATEGORIES */}
-            <div style={{ padding: "32px 20px 0" }}>
+            <div style={{ padding: "clamp(24px, 4vw, 60px) clamp(20px, 8vw, 120px) 0", background: "#FAFAF7" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18 }}>Featured Categories</div>
+                <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, color: "#1A1400" }}>Featured Categories</div>
                 <span onClick={() => setView("browse")} style={{ fontSize: 13, color: "#D4A846", cursor: "pointer" }}>View All →</span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10 }}>
                 {[
-                  { id: "electrician", icon: "⚡", label: "Electrician", bg: "#1a1200" },
-                  { id: "plumber", icon: "🔧", label: "Plumber", bg: "#0f1520" },
-                  { id: "carpenter", icon: "🪚", label: "Carpenter", bg: "#1a0f00" },
-                  { id: "cleaner", icon: "🧹", label: "Cleaner", bg: "#0f1a10" },
-                  { id: "mechanic", icon: "🔩", label: "Mechanic", bg: "#1a1000" },
-                  { id: "ac_repair", icon: "❄️", label: "AC Repair", bg: "#0f1520" },
+                  { id: "electrician", icon: "⚡", label: "Electrician", bg: "#FFF8E7" },
+                  { id: "plumber", icon: "🔧", label: "Plumber", bg: "#EFF4FF" },
+                  { id: "carpenter", icon: "🪚", label: "Carpenter", bg: "#FFF3E7" },
+                  { id: "cleaner", icon: "🧹", label: "Cleaner", bg: "#EFFFF2" },
+                  { id: "mechanic", icon: "🔩", label: "Mechanic", bg: "#FFF8E0" },
+                  { id: "ac_repair", icon: "❄️", label: "AC Repair", bg: "#EFF8FF" },
                 ].map(cat => (
                   <div key={cat.id} onClick={() => { setSelectedService(cat.id); setView("browse"); }}
-                    style={{ background: cat.bg, border: "1px solid rgba(212,168,70,0.12)", borderRadius: 16, padding: "20px 12px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ background: cat.bg, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 16, padding: "20px 12px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" }}>
                     <div style={{ fontSize: 28, marginBottom: 8 }}>{cat.icon}</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#aaa" }}>{cat.label}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>{cat.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* HOW IT WORKS */}
-            <div style={{ padding: "36px 20px 0" }}>
-              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 6, textAlign: "center" }}>How HandyNG Works</div>
+            <div style={{ padding: "clamp(24px, 4vw, 60px) clamp(20px, 8vw, 120px) 0", background: "#FAFAF7", maxWidth: "100%" }}>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 6, textAlign: "center", color: "#1A1400" }}>How HandyNG Works</div>
               <div style={{ fontSize: 13, color: "#666", textAlign: "center", marginBottom: 24 }}>Simple. Fast. Reliable.</div>
               {[
                 { num: "01", title: "Find a Provider", desc: "Search by service and city. Browse verified profiles with ratings and reviews.", icon: "🔍" },
                 { num: "02", title: "Connect & Chat", desc: "Message providers directly in-app. No need to share your phone number.", icon: "💬" },
                 { num: "03", title: "Book & Get it Done", desc: "Send a booking request, agree on details, and get the job done.", icon: "✅" },
               ].map(step => (
-                <div key={step.num} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 20, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(212,168,70,0.1)", borderRadius: 16, padding: 16 }}>
+                <div key={step.num} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 20, background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 16, padding: 16 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(212,168,70,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{step.icon}</div>
                   <div>
                     <div style={{ fontSize: 11, color: "#D4A846", fontWeight: 700, marginBottom: 4 }}>{step.num}</div>
-                    <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{step.title}</div>
+                    <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#1A1400" }}>{step.title}</div>
                     <div style={{ fontSize: 13, color: "#777", lineHeight: 1.6 }}>{step.desc}</div>
                   </div>
                 </div>
@@ -991,16 +1067,16 @@ export default function App() {
             </div>
 
             {/* BOTTOM CTA */}
-            <div style={{ padding: "32px 20px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-              <button onClick={() => { setAuthView("signup"); setView("auth"); }} style={{ width: "100%", padding: 15, background: "#D4A846", border: "none", borderRadius: 14, fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 15, color: "#0A0A0A", cursor: "pointer" }}>Get Started — It's Free</button>
-              <button onClick={() => setView("home")} style={{ width: "100%", padding: 14, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 14, color: "#888", cursor: "pointer" }}>Browse Without Account</button>
+            <div style={{ padding: "clamp(24px, 4vw, 48px) clamp(20px, 8vw, 120px) 20px", display: "flex", flexDirection: "row", gap: 12, background: "#FAFAF7", justifyContent: "center", flexWrap: "wrap" }}>
+              <button onClick={() => { setAuthView("signup"); setView("auth"); }} style={{ flex: "1 1 200px", maxWidth: 280, padding: 15, background: "#D4A846", border: "none", borderRadius: 14, fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 15, color: "#0A0A0A", cursor: "pointer" }}>Get Started — It's Free</button>
+              <button onClick={() => setView("home")} style={{ flex: "1 1 200px", maxWidth: 280, padding: 14, background: "transparent", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 14, fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 14, color: "#888", cursor: "pointer" }}>Browse Without Account</button>
             </div>
 
             {/* FOOTER */}
-            <div style={{ padding: "20px 24px 40px", borderTop: "1px solid rgba(212,168,70,0.08)", textAlign: "center" }}>
-              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 6 }}>Handy<span style={{ color: "#D4A846" }}>NG</span></div>
-              <div style={{ fontSize: 12, color: "#555", marginBottom: 12 }}>Nigeria's Trusted Service Network</div>
-              <div style={{ fontSize: 11, color: "#444" }}>© {new Date().getFullYear()} HandyNG. All rights reserved.</div>
+            <div style={{ padding: "clamp(20px, 4vw, 40px) clamp(24px, 8vw, 120px) 40px", borderTop: "1px solid rgba(0,0,0,0.08)", textAlign: "center", background: "#FAFAF7" }}>
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 6, color: "#1A1400" }}>Handy<span style={{ color: "#D4A846" }}>NG</span></div>
+              <div style={{ fontSize: 12, color: "#888", marginBottom: 12 }}>Nigeria's Trusted Service Network</div>
+              <div style={{ fontSize: 11, color: "#aaa" }}>© {new Date().getFullYear()} HandyNG. All rights reserved.</div>
             </div>
 
           </div>
