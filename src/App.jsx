@@ -5,7 +5,7 @@ import {
   Wind, Flame, Cog, Grid, Shirt, Shield,
   Search, Home, BookOpen, User, Plus, ArrowLeft,
   Star, MapPin, CheckCircle, Circle, Send, ChevronRight,
-  LogOut, Phone, Clock, Menu, X, Lock
+  LogOut, Phone, Clock, Menu, X, Lock, Eye, EyeOff
 } from "lucide-react";
 
 const SUPABASE_URL = "https://wikdqgzamwwjubrivrwo.supabase.co";
@@ -90,6 +90,12 @@ export default function App() {
   const [editSaving, setEditSaving] = useState(false);
   const [editSuccess, setEditSuccess] = useState(false);
 
+  // Admin state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [allProviders, setAllProviders] = useState([]);
+  const [loadingAdmin, setLoadingAdmin] = useState(false);
+  const [adminTab, setAdminTab] = useState("pending"); // pending | verified | all
+
   // Reviews state
   const [reviews, setReviews] = useState({});
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -102,13 +108,15 @@ export default function App() {
 
   // Auth state
   const [user, setUser] = useState(null);
-  const [authView, setAuthView] = useState("login"); // login | signup
+  const [authView, setAuthView] = useState("login"); // login | signup | forgot
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authName, setAuthName] = useState("");
   const [authRole, setAuthRole] = useState("customer"); // customer | provider
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   const [selectedService, setSelectedService] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedProvider, setSelectedProvider] = useState(null);
@@ -125,8 +133,11 @@ export default function App() {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [form, setForm] = useState({
     name: "", phone: "", service: "", location: "", area: "",
-    experience: "", bio: "", price: "", priceUnit: "hr"
+    experience: "", bio: "", price: "", priceUnit: "hr",
+    nin: "", portfolioPhotos: []
   });
+  const [portfolioPreviews, setPortfolioPreviews] = useState([]);
+  const portfolioInputRef = useRef(null);
   const [formErrors, setFormErrors] = useState({});
   const [regLoading, setRegLoading] = useState(false);
   const fileInputRef = useRef(null);
@@ -167,6 +178,16 @@ export default function App() {
     const errors = validateStep(3);
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
     setRegLoading(true);
+    // Auto-verification checks
+    const hasFullName = form.name.trim().split(" ").length >= 2;
+    const hasValidPhone = /^(070|080|081|090|091)[0-9]{8}$/.test(form.phone.trim().replace(/\s/g, ""));
+    const hasGoodBio = form.bio.trim().length >= 30;
+    const hasValidPrice = parseInt(form.price) > 0;
+    const hasAllFields = form.service && form.location && form.area.trim();
+    const hasNIN = form.nin.trim().length === 11;
+    const hasPhoto = !!photoPreview;
+    const autoVerified = hasFullName && hasValidPhone && hasGoodBio && hasValidPrice && hasAllFields && hasNIN && hasPhoto;
+
     const { error } = await supabase.from("providers").insert([{
       name: form.name,
       phone: form.phone,
@@ -179,6 +200,9 @@ export default function App() {
       price_unit: form.priceUnit,
       photo_url: photoPreview || null,
       user_id: user?.id || null,
+      verified: autoVerified,
+      nin: form.nin || null,
+      portfolio_urls: portfolioPreviews.length > 0 ? portfolioPreviews : null,
     }]);
     setRegLoading(false);
     if (error) { alert("Something went wrong. Please try again."); return; }
@@ -192,6 +216,17 @@ export default function App() {
       reader.onloadend = () => setPhotoPreview(reader.result);
       reader.readAsDataURL(file);
     }
+  };
+
+  const handlePortfolioChange = (e) => {
+    const files = Array.from(e.target.files).slice(0, 4);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPortfolioPreviews(prev => [...prev.slice(0, 3), reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   useEffect(() => {
@@ -248,6 +283,18 @@ export default function App() {
     setView("home");
   };
 
+  const handleForgotPassword = async () => {
+    if (!authEmail.trim()) { setAuthError("Enter your email address first"); return; }
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.resetPasswordForEmail(authEmail, {
+      redirectTo: "https://handyng.vercel.app",
+    });
+    setAuthLoading(false);
+    if (error) { setAuthError(error.message); return; }
+    setForgotSent(true);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -265,7 +312,7 @@ export default function App() {
   }, [regSuccess]);
 
   // Merge mock providers with real DB providers
-  const allProviders = [
+  const mergedProviders = [
     ...PROVIDERS,
     ...dbProviders.map(p => ({
       id: p.id,
@@ -286,7 +333,7 @@ export default function App() {
     }))
   ];
 
-  const filteredProviders = allProviders.filter(p => {
+  const filteredProviders = mergedProviders.filter(p => {
     const matchService = !selectedService || p.service === selectedService;
     const matchLocation = !selectedLocation || p.location === selectedLocation;
     const matchAvail = !filterAvailable || p.available;
@@ -794,6 +841,34 @@ export default function App() {
     .star-pick:hover { transform: scale(1.2); }
     .rating-label { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; font-weight: 500; min-height: 20px; }
 
+    /* ── ADMIN PANEL ── */
+    .admin-container { padding: 0 0 100px; background: #F5F5F0; min-height: 100vh; }
+    .admin-hero { background: linear-gradient(135deg, #1A0A0A, #3a0000); padding: 28px 20px 20px; color: #F5EDD8; }
+    .admin-hero-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 4px; }
+    .admin-hero-sub { font-size: 13px; color: rgba(245,237,216,0.6); }
+    .admin-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(0,0,0,0.06); }
+    .admin-stat { padding: 14px 12px; text-align: center; background: #fff; }
+    .admin-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #D4A846; }
+    .admin-stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+    .admin-tabs { display: flex; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .admin-tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; color: #aaa; transition: all 0.2s; font-family: 'DM Sans', sans-serif; background: none; border-top: none; border-left: none; border-right: none; }
+    .admin-tab.active { color: #D4A846; border-bottom-color: #D4A846; }
+    .admin-provider-card { background: #fff; margin: 10px 16px 0; border-radius: 16px; padding: 16px; border: 1px solid rgba(0,0,0,0.08); }
+    .admin-provider-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .admin-avatar { width: 44px; height: 44px; border-radius: 12px; background: #D4A846; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; color: #0A0A0A; flex-shrink: 0; }
+    .admin-provider-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #1A1400; margin-bottom: 2px; }
+    .admin-provider-meta { font-size: 12px; color: #888; }
+    .admin-badge-verified { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,200,100,0.1); border: 1px solid rgba(0,200,100,0.25); border-radius: 100px; padding: 3px 10px; font-size: 11px; color: #00a855; font-weight: 600; }
+    .admin-badge-pending { display: inline-flex; align-items: center; gap: 4px; background: rgba(212,168,70,0.1); border: 1px solid rgba(212,168,70,0.25); border-radius: 100px; padding: 3px 10px; font-size: 11px; color: #D4A846; font-weight: 600; }
+    .admin-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .admin-verify-btn { flex: 1; padding: 10px; background: rgba(0,200,100,0.1); color: #00a855; border: 1px solid rgba(0,200,100,0.25); border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .admin-verify-btn:hover { background: rgba(0,200,100,0.2); }
+    .admin-unverify-btn { flex: 1; padding: 10px; background: rgba(255,80,80,0.08); color: #ff6b6b; border: 1px solid rgba(255,80,80,0.2); border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .admin-unverify-btn:hover { background: rgba(255,80,80,0.15); }
+    .admin-provider-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; color: #888; margin-top: 8px; }
+    .admin-info-item { display: flex; flex-direction: column; gap: 2px; }
+    .admin-info-val { font-size: 13px; color: #1A1400; font-weight: 500; }
+
     /* ── PROVIDER DASHBOARD ── */
     .dashboard { padding: 0 0 100px; }
     .dashboard-hero { background: linear-gradient(135deg, #1A1400, #3a2e00); padding: 32px 20px 24px; color: #F5EDD8; position: relative; overflow: hidden; }
@@ -1013,7 +1088,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (user) fetchBookings();
+    if (user) {
+      fetchBookings();
+      fetchProviderProfile();
+    }
   }, [user]);
 
   useEffect(() => {
@@ -1167,6 +1245,44 @@ export default function App() {
     if (view === "dashboard") fetchProviderProfile();
   }, [view, user]);
 
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) { setIsAdmin(false); return; }
+      const { data } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, [user]);
+
+  const fetchAllProviders = async () => {
+    setLoadingAdmin(true);
+    const { data } = await supabase
+      .from("providers")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (data) setAllProviders(data);
+    setLoadingAdmin(false);
+  };
+
+  useEffect(() => {
+    if (view === "admin") fetchAllProviders();
+  }, [view]);
+
+  const verifyProvider = async (providerId) => {
+    await supabase.from("providers").update({ verified: true }).eq("id", providerId);
+    setAllProviders(prev => prev.map(p => p.id === providerId ? { ...p, verified: true } : p));
+  };
+
+  const unverifyProvider = async (providerId) => {
+    await supabase.from("providers").update({ verified: false }).eq("id", providerId);
+    setAllProviders(prev => prev.map(p => p.id === providerId ? { ...p, verified: false } : p));
+  };
+
   const serviceLabel = (id) => SERVICES.find(s => s.id === id)?.label || id;
 
   return (
@@ -1195,6 +1311,9 @@ export default function App() {
           )}
           {view === "dashboard" && (
             <div style={{ fontSize: 13, color: "#D4A846" }}>Provider Dashboard</div>
+          )}
+          {view === "admin" && (
+            <div style={{ fontSize: 13, color: "#ff6b6b" }}>Admin Panel</div>
           )}
           {view === "profile" && selectedProvider && (
             <div style={{ fontSize: 13, color: "#666" }}>{serviceLabel(selectedProvider.service)}</div>
@@ -1383,7 +1502,9 @@ export default function App() {
                 <div key={provider.id} className="provider-card" style={{ marginBottom: 10 }}
                   onClick={() => { setSelectedProvider(provider); setView("profile"); }}>
                   <div className="provider-card-top">
-                    <div className="avatar" style={{ background: COLORS[provider.img] }}>{provider.img}</div>
+                    <div className="avatar" style={{ background: COLORS[provider.img] || "#7a4f00", overflow: "hidden" }}>
+                      {provider.photoUrl ? <img src={provider.photoUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={provider.name} /> : provider.img}
+                    </div>
                     <div className="provider-info">
                       <div className="provider-name">
                         {provider.name}
@@ -1448,7 +1569,9 @@ export default function App() {
                   <div key={provider.id} className="provider-card"
                     onClick={() => { setSelectedProvider(provider); setView("profile"); }}>
                     <div className="provider-card-top">
-                      <div className="avatar" style={{ background: COLORS[provider.img] }}>{provider.img}</div>
+                      <div className="avatar" style={{ background: COLORS[provider.img] || "#7a4f00", overflow: "hidden" }}>
+                      {provider.photoUrl ? <img src={provider.photoUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={provider.name} /> : provider.img}
+                    </div>
                       <div className="provider-info">
                         <div className="provider-name">
                           {provider.name}
@@ -1477,7 +1600,11 @@ export default function App() {
         {view === "profile" && selectedProvider && (
           <div style={{ paddingBottom: 100, overflowY: "auto", height: "calc(100vh - 56px)" }}>
             <div className="profile-hero">
-              <div className="avatar-lg" style={{ background: COLORS[selectedProvider.img] }}>{selectedProvider.img}</div>
+              <div className="avatar-lg" style={{ background: COLORS[selectedProvider.img] || "#7a4f00", overflow: "hidden", padding: 0 }}>
+                {selectedProvider.photoUrl
+                  ? <img src={selectedProvider.photoUrl} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 20 }} alt={selectedProvider.name} />
+                  : selectedProvider.img}
+              </div>
               <div className="profile-name">
                 {selectedProvider.name}
                 {selectedProvider.verified && <span className="verified-badge" style={{ marginLeft: 8, fontSize: 11 }}>✓ Verified</span>}
@@ -1620,7 +1747,21 @@ export default function App() {
               <div className="success-screen">
                 <div className="success-icon"><CheckCircle size={64} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                 <div className="success-title">You're registered!</div>
-                <div className="success-sub">Your profile is under review. We'll notify you within 24 hours once you're verified and live on HandyNG.</div>
+                <div className="success-sub">
+                  {(() => {
+                    const hasFullName = form.name.trim().split(" ").length >= 2;
+                    const hasValidPhone = /^(070|080|081|090|091)[0-9]{8}$/.test(form.phone.trim().replace(/\s/g, ""));
+                    const hasGoodBio = form.bio.trim().length >= 30;
+                    const hasValidPrice = parseInt(form.price) > 0;
+                    const hasAllFields = form.service && form.location && form.area.trim();
+                    const hasNIN = form.nin.trim().length === 11;
+                    const hasPhoto = !!photoPreview;
+                    const autoVerified = hasFullName && hasValidPhone && hasGoodBio && hasValidPrice && hasAllFields && hasNIN && hasPhoto;
+                    return autoVerified
+                      ? "🎉 Your profile has been automatically verified! You are now live on HandyNG."
+                      : "Your profile is under review. An admin will verify you shortly.";
+                  })()}
+                </div>
                 <div className="success-card">
                   <div className="success-card-row"><span className="success-card-label">Name</span><span className="success-card-value">{form.name}</span></div>
                   <div className="success-card-row"><span className="success-card-label">Service</span><span className="success-card-value">{SERVICES.find(s => s.id === form.service)?.label}</span></div>
@@ -1678,6 +1819,35 @@ export default function App() {
                       <label className="field-label">Phone Number</label>
                       <input className={`field-input ${formErrors.phone ? "error" : ""}`} placeholder="e.g. 08012345678" value={form.phone} onChange={e => updateForm("phone", e.target.value)} type="tel" />
                       {formErrors.phone && <div className="field-error">{formErrors.phone}</div>}
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label">Government ID / NIN</label>
+                      <input className={`field-input`} placeholder="Enter your NIN number" value={form.nin} onChange={e => updateForm("nin", e.target.value)} maxLength={11} />
+                      <div style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>Your NIN is kept private and only used for verification</div>
+                    </div>
+
+                    <div className="field-group">
+                      <label className="field-label">Portfolio Photos <span style={{color:"#aaa", fontWeight:400}}>(optional, max 4)</span></label>
+                      <input type="file" accept="image/*" multiple ref={portfolioInputRef} style={{ display: "none" }} onChange={handlePortfolioChange} />
+                      {portfolioPreviews.length > 0 ? (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 8 }}>
+                          {portfolioPreviews.map((img, i) => (
+                            <div key={i} style={{ position: "relative" }}>
+                              <img src={img} style={{ width: "100%", height: 80, objectFit: "cover", borderRadius: 10, border: "1px solid rgba(212,168,70,0.2)" }} alt={`portfolio ${i+1}`} />
+                              <button onClick={() => setPortfolioPreviews(prev => prev.filter((_, idx) => idx !== i))} style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.5)", border: "none", borderRadius: "50%", width: 20, height: 20, cursor: "pointer", color: "#fff", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                            </div>
+                          ))}
+                          {portfolioPreviews.length < 4 && (
+                            <div onClick={() => portfolioInputRef.current.click()} style={{ height: 80, border: "2px dashed rgba(212,168,70,0.25)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#D4A846", fontSize: 24 }}>+</div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="photo-upload" onClick={() => portfolioInputRef.current.click()}>
+                          <div className="photo-upload-icon"><Hammer size={28} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
+                          <div className="photo-upload-text"><span>Upload photos</span> of your past work</div>
+                        </div>
+                      )}
                     </div>
 
                     <button className="reg-btn" onClick={handleNextStep}>Continue</button>
@@ -1761,6 +1931,147 @@ export default function App() {
                     <button className="reg-btn" onClick={handleSubmitReg} disabled={regLoading}>{regLoading ? "Saving..." : "Submit Registration 🎉"}</button>
                     <button className="reg-btn-outline" onClick={() => setRegStep(2)}>Back</button>
                   </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── ADMIN PANEL ── */}
+        {view === "admin" && (
+          <div style={{ overflowY: "auto", height: "calc(100vh - 56px)" }}>
+            {!isAdmin ? (
+              <div className="not-provider-card" style={{ marginTop: 40 }}>
+                <div className="not-provider-icon"><Shield size={48} strokeWidth={1.4} color="#D4A846" /></div>
+                <div className="not-provider-title">Access Denied</div>
+                <div className="not-provider-sub">You don't have admin access to this page.</div>
+                <button className="reg-btn" onClick={() => setView("home")}>Go Home</button>
+              </div>
+            ) : (
+              <div className="admin-container">
+                {/* Hero */}
+                <div className="admin-hero">
+                  <div className="admin-hero-title">Admin Panel</div>
+                  <div className="admin-hero-sub">Manage and verify service providers</div>
+                </div>
+
+                {/* Stats */}
+                <div className="admin-stats-row">
+                  <div className="admin-stat">
+                    <div className="admin-stat-num">{allProviders.length}</div>
+                    <div className="admin-stat-label">Total</div>
+                  </div>
+                  <div className="admin-stat">
+                    <div className="admin-stat-num">{allProviders.filter(p => p.verified).length}</div>
+                    <div className="admin-stat-label">Verified</div>
+                  </div>
+                  <div className="admin-stat">
+                    <div className="admin-stat-num">{allProviders.filter(p => !p.verified).length}</div>
+                    <div className="admin-stat-label">Pending</div>
+                  </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="admin-tabs">
+                  {[["pending", "Pending"], ["verified", "Verified"], ["all", "All"]].map(([key, label]) => (
+                    <button key={key} className={`admin-tab ${adminTab === key ? "active" : ""}`} onClick={() => setAdminTab(key)}>
+                      {label} {key === "pending" ? `(${allProviders.filter(p => !p.verified).length})` : key === "verified" ? `(${allProviders.filter(p => p.verified).length})` : `(${allProviders.length})`}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Provider list */}
+                {loadingAdmin ? (
+                  <div className="empty-state"><Clock size={40} strokeWidth={1.4} style={{color:"#D4A846", margin:"20px auto 10px"}} /><h3>Loading...</h3></div>
+                ) : (
+                  allProviders
+                    .filter(p => adminTab === "pending" ? !p.verified : adminTab === "verified" ? p.verified : true)
+                    .map(provider => (
+                      <div key={provider.id} className="admin-provider-card">
+                        <div className="admin-provider-top">
+                          <div className="admin-avatar">
+                            {provider.name.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div className="admin-provider-name">{provider.name}</div>
+                            <div className="admin-provider-meta">{serviceLabel(provider.service)} · {provider.area}, {provider.location}</div>
+                          </div>
+                          {provider.verified
+                            ? <span className="admin-badge-verified"><CheckCircle size={11} strokeWidth={2.5} />Verified</span>
+                            : <span className="admin-badge-pending"><Clock size={11} strokeWidth={2.5} />Pending</span>
+                          }
+                        </div>
+
+                        <div className="admin-provider-info">
+                          <div className="admin-info-item">
+                            <span>Phone</span>
+                            <span className="admin-info-val">{provider.phone}</span>
+                          </div>
+                          <div className="admin-info-item">
+                            <span>Rate</span>
+                            <span className="admin-info-val">₦{provider.price}/{provider.price_unit}</span>
+                          </div>
+                          <div className="admin-info-item">
+                            <span>Experience</span>
+                            <span className="admin-info-val">{provider.experience} yrs</span>
+                          </div>
+                          <div className="admin-info-item">
+                            <span>Registered</span>
+                            <span className="admin-info-val">{new Date(provider.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
+                          </div>
+                        </div>
+
+                        {provider.bio && (
+                          <div style={{ fontSize: 12, color: "#888", marginTop: 8, lineHeight: 1.6, fontStyle: "italic" }}>"{provider.bio}"</div>
+                        )}
+
+                        {/* NIN */}
+                        {provider.nin && (
+                          <div style={{ marginTop: 10, padding: "8px 12px", background: "rgba(212,168,70,0.06)", borderRadius: 10, border: "1px solid rgba(212,168,70,0.15)" }}>
+                            <div style={{ fontSize: 11, color: "#aaa", marginBottom: 2 }}>GOVERNMENT ID / NIN</div>
+                            <div style={{ fontSize: 14, color: "#1A1400", fontWeight: 600, letterSpacing: 1 }}>{provider.nin}</div>
+                          </div>
+                        )}
+
+                        {/* Portfolio photos */}
+                        {provider.portfolio_urls && provider.portfolio_urls.length > 0 && (
+                          <div style={{ marginTop: 10 }}>
+                            <div style={{ fontSize: 11, color: "#aaa", marginBottom: 6 }}>PORTFOLIO PHOTOS</div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6 }}>
+                              {provider.portfolio_urls.map((url, i) => (
+                                <img key={i} src={url} style={{ width: "100%", height: 80, objectFit: "cover", borderRadius: 10, border: "1px solid rgba(0,0,0,0.08)" }} alt={`portfolio ${i+1}`} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Profile photo */}
+                        {provider.photo_url && (
+                          <div style={{ marginTop: 10 }}>
+                            <div style={{ fontSize: 11, color: "#aaa", marginBottom: 6 }}>PROFILE PHOTO</div>
+                            <img src={provider.photo_url} style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 12, border: "1px solid rgba(212,168,70,0.2)" }} alt="profile" />
+                          </div>
+                        )}
+
+                        <div className="admin-actions">
+                          {!provider.verified ? (
+                            <button className="admin-verify-btn" onClick={() => verifyProvider(provider.id)}>
+                              <CheckCircle size={14} strokeWidth={2} style={{display:"inline", marginRight:6}}/>Verify Provider
+                            </button>
+                          ) : (
+                            <button className="admin-unverify-btn" onClick={() => unverifyProvider(provider.id)}>
+                              <X size={14} strokeWidth={2} style={{display:"inline", marginRight:6}}/>Remove Verification
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                )}
+                {allProviders.filter(p => adminTab === "pending" ? !p.verified : adminTab === "verified" ? p.verified : true).length === 0 && !loadingAdmin && (
+                  <div className="empty-state" style={{ paddingTop: 40 }}>
+                    <div style={{ display:"flex", justifyContent:"center", marginBottom:12 }}><CheckCircle size={40} strokeWidth={1.4} color="#D4A846" /></div>
+                    <h3>{adminTab === "pending" ? "No pending providers" : "No providers found"}</h3>
+                  </div>
                 )}
               </div>
             )}
@@ -1923,7 +2234,30 @@ export default function App() {
               <div className="auth-logo">Handy<span>NG</span></div>
               <div className="auth-tagline">Nigeria's Trusted Service Network</div>
 
-              {authView === "login" ? (
+              {authView === "forgot" ? (
+                <>
+                  <div className="auth-title">Reset Password</div>
+                  <div className="auth-sub">Enter your email and we'll send you a reset link</div>
+                  {forgotSent ? (
+                    <div style={{ textAlign: "center", padding: "20px 0" }}>
+                      <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}><CheckCircle size={56} strokeWidth={1.4} color="#D4A846" /></div>
+                      <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 8, color: "#1A1400" }}>Reset link sent!</div>
+                      <div style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>Check your email at <strong>{authEmail}</strong> for the reset link.</div>
+                      <button className="reg-btn" onClick={() => { setAuthView("login"); setForgotSent(false); }}>Back to Login</button>
+                    </div>
+                  ) : (
+                    <>
+                      {authError && <div className="auth-error">{authError}</div>}
+                      <div className="field-group">
+                        <label className="field-label">Email</label>
+                        <input className="field-input" placeholder="you@email.com" value={authEmail} onChange={e => { setAuthEmail(e.target.value); setAuthError(""); }} type="email" />
+                      </div>
+                      <button className="reg-btn" onClick={handleForgotPassword} disabled={authLoading}>{authLoading ? "Sending..." : "Send Reset Link"}</button>
+                      <button className="reg-btn-outline" onClick={() => { setAuthView("login"); setAuthError(""); }}>Back to Login</button>
+                    </>
+                  )}
+                </>
+              ) : authView === "login" ? (
                 <>
                   <div className="auth-title">Welcome back</div>
                   <div className="auth-sub">Log in to your account</div>
@@ -1934,7 +2268,15 @@ export default function App() {
                   </div>
                   <div className="field-group">
                     <label className="field-label">Password</label>
-                    <input className="field-input" placeholder="Your password" value={authPassword} onChange={e => { setAuthPassword(e.target.value); setAuthError(""); }} type="password" />
+                    <div style={{ position: "relative" }}>
+                      <input className="field-input" placeholder="Your password" value={authPassword} onChange={e => { setAuthPassword(e.target.value); setAuthError(""); }} type={showPassword ? "text" : "password"} style={{ paddingRight: 44 }} />
+                      <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", alignItems: "center" }}>
+                        {showPassword ? <Eye size={18} strokeWidth={1.8} /> : <EyeOff size={18} strokeWidth={1.8} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right", marginBottom: 16, marginTop: -8 }}>
+                    <span onClick={() => { setAuthView("forgot"); setAuthError(""); setForgotSent(false); }} style={{ fontSize: 13, color: "#D4A846", cursor: "pointer", fontWeight: 600 }}>Forgot password?</span>
                   </div>
                   <button className="reg-btn" onClick={handleLogin} disabled={authLoading}>{authLoading ? "Logging in..." : "Log In"}</button>
                   <div className="auth-switch">Don't have an account? <span onClick={() => { setAuthView("signup"); setAuthError(""); }}>Sign up</span></div>
@@ -1958,7 +2300,12 @@ export default function App() {
                   </div>
                   <div className="field-group">
                     <label className="field-label">Password</label>
-                    <input className="field-input" placeholder="Min. 6 characters" value={authPassword} onChange={e => { setAuthPassword(e.target.value); setAuthError(""); }} type="password" />
+                    <div style={{ position: "relative" }}>
+                      <input className="field-input" placeholder="Min. 6 characters" value={authPassword} onChange={e => { setAuthPassword(e.target.value); setAuthError(""); }} type={showPassword ? "text" : "password"} style={{ paddingRight: 44 }} />
+                      <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", alignItems: "center" }}>
+                        {showPassword ? <Eye size={18} strokeWidth={1.8} /> : <EyeOff size={18} strokeWidth={1.8} />}
+                      </button>
+                    </div>
                   </div>
                   <button className="reg-btn" onClick={handleSignup} disabled={authLoading}>{authLoading ? "Creating account..." : "Create Account"}</button>
                   <div className="auth-switch">Already have an account? <span onClick={() => { setAuthView("login"); setAuthError(""); }}>Log in</span></div>
@@ -1992,11 +2339,13 @@ export default function App() {
                     <span className="profile-menu-label">Provider Dashboard</span>
                     <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
                   </div>
-                  <div className="profile-menu-item" onClick={() => setView("register")}>
-                    <span className="profile-menu-icon"><Plus size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
-                    <span className="profile-menu-label">Register as Provider</span>
-                    <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
-                  </div>
+                  {!providerProfile && (
+                    <div className="profile-menu-item" onClick={() => setView("register")}>
+                      <span className="profile-menu-icon"><Plus size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
+                      <span className="profile-menu-label">Register as Provider</span>
+                      <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
+                    </div>
+                  )}
                   <div className="profile-menu-item" onClick={() => setView("bookings")}>
                     <span className="profile-menu-icon"><BookOpen size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
                     <span className="profile-menu-label">My Bookings</span>
@@ -2007,6 +2356,13 @@ export default function App() {
                     <span className="profile-menu-label">Settings</span>
                     <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
                   </div>
+                  {isAdmin && (
+                    <div className="profile-menu-item" onClick={() => setView("admin")} style={{ borderColor: "rgba(255,80,80,0.2)", background: "rgba(255,80,80,0.03)" }}>
+                      <span className="profile-menu-icon"><Shield size={20} strokeWidth={1.8} style={{color:"#ff6b6b"}} /></span>
+                      <span className="profile-menu-label" style={{ color: "#ff6b6b" }}>Admin Panel</span>
+                      <ChevronRight size={16} strokeWidth={2} style={{color:"#ffaaaa"}} />
+                    </div>
+                  )}
                 </div>
                 <button className="logout-btn" onClick={handleLogout}><LogOut size={16} strokeWidth={2} style={{display:"inline", marginRight:8}}/>Log Out</button>
               </div>
