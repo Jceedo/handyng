@@ -123,6 +123,7 @@ export default function App() {
   const [chatTarget, setChatTarget] = useState(null);
   const [messages, setMessages] = useState({});
   const [inputMsg, setInputMsg] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterAvailable, setFilterAvailable] = useState(false);
   const chatEndRef = useRef(null);
@@ -230,13 +231,56 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (view === "chat" && chatTarget) {
-      const init = SAMPLE_MESSAGES[chatTarget.id] || [
-        { from: "provider", text: `Hi there! I'm ${chatTarget.name}. What service do you need?`, time: "Just now" }
-      ];
-      setMessages(prev => ({ ...prev, [chatTarget.id]: prev[chatTarget.id] || init }));
+    if (view === "chat" && chatTarget && user) {
+      const convId = [user.id, String(chatTarget.id)].sort().join("_");
+      setChatLoading(true);
+
+      // Fetch existing messages
+      supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", convId)
+        .order("created_at", { ascending: true })
+        .then(({ data }) => {
+          if (data) {
+            setMessages(prev => ({
+              ...prev,
+              [chatTarget.id]: data.map(m => ({
+                from: m.sender_id === user.id ? "user" : "provider",
+                text: m.content,
+                time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                id: m.id,
+              }))
+            }));
+          }
+          setChatLoading(false);
+        });
+
+      // Subscribe to real-time messages
+      const channel = supabase
+        .channel(`chat_${convId}`)
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${convId}`,
+        }, (payload) => {
+          const m = payload.new;
+          setMessages(prev => ({
+            ...prev,
+            [chatTarget.id]: [...(prev[chatTarget.id] || []), {
+              from: m.sender_id === user.id ? "user" : "provider",
+              text: m.content,
+              time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              id: m.id,
+            }]
+          }));
+        })
+        .subscribe();
+
+      return () => supabase.removeChannel(channel);
     }
-  }, [view, chatTarget]);
+  }, [view, chatTarget, user]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -341,28 +385,18 @@ export default function App() {
     return matchService && matchLocation && matchAvail && matchSearch;
   });
 
-  const sendMessage = () => {
-    if (!inputMsg.trim() || !chatTarget) return;
-    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    setMessages(prev => ({
-      ...prev,
-      [chatTarget.id]: [...(prev[chatTarget.id] || []), { from: "user", text: inputMsg, time: now }]
-    }));
+  const sendMessage = async () => {
+    if (!inputMsg.trim() || !chatTarget || !user) return;
+    const text = inputMsg.trim();
     setInputMsg("");
-    setTimeout(() => {
-      const replies = [
-        "Sure, I can handle that. When would you like me to come?",
-        "Yes, I'm available. Can you share your address?",
-        "That's within my scope. My rate is fixed for the first hour.",
-        "No problem! I've done this many times. I can come tomorrow.",
-      ];
-      const reply = replies[Math.floor(Math.random() * replies.length)];
-      const replyTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      setMessages(prev => ({
-        ...prev,
-        [chatTarget.id]: [...(prev[chatTarget.id] || []), { from: "provider", text: reply, time: replyTime }]
-      }));
-    }, 1200);
+    const convId = [user.id, String(chatTarget.id)].sort().join("_");
+    await supabase.from("messages").insert([{
+      conversation_id: convId,
+      sender_id: user.id,
+      sender_name: user.user_metadata?.full_name || user.email,
+      receiver_id: String(chatTarget.id),
+      content: text,
+    }]);
   };
 
   const styles = `
@@ -1718,12 +1752,31 @@ export default function App() {
             </div>
 
             <div className="chat-body">
-              {(messages[chatTarget.id] || []).map((msg, i) => (
-                <div key={i} className={`msg ${msg.from}`}>
-                  <div className="msg-bubble">{msg.text}</div>
-                  <div className="msg-time">{msg.time}</div>
+              {!user ? (
+                <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                  <Lock size={40} strokeWidth={1.4} style={{ color: "#D4A846", margin: "0 auto 12px" }} />
+                  <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, marginBottom: 8, color: "#1A1400" }}>Login to chat</div>
+                  <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>You need an account to message providers</div>
+                  <button className="reg-btn" style={{ maxWidth: 200, margin: "0 auto" }} onClick={() => { setAuthView("login"); setView("auth"); }}>Log In</button>
                 </div>
-              ))}
+              ) : chatLoading ? (
+                <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                  <Clock size={32} strokeWidth={1.4} style={{ color: "#D4A846", margin: "0 auto 8px" }} />
+                  <div style={{ fontSize: 13, color: "#888" }}>Loading messages...</div>
+                </div>
+              ) : (messages[chatTarget.id] || []).length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                  <Send size={32} strokeWidth={1.4} style={{ color: "#D4A846", margin: "0 auto 12px" }} />
+                  <div style={{ fontSize: 14, color: "#888" }}>No messages yet. Say hi to {chatTarget.name.split(" ")[0]}!</div>
+                </div>
+              ) : (
+                (messages[chatTarget.id] || []).map((msg, i) => (
+                  <div key={msg.id || i} className={`msg ${msg.from}`}>
+                    <div className="msg-bubble">{msg.text}</div>
+                    <div className="msg-time">{msg.time}</div>
+                  </div>
+                ))
+              )}
               <div ref={chatEndRef} />
             </div>
 
@@ -1735,7 +1788,7 @@ export default function App() {
                 onChange={e => setInputMsg(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && sendMessage()}
               />
-              <button className="send-btn" onClick={sendMessage}><Send size={16} strokeWidth={2} /></button>
+              <button className="send-btn" onClick={sendMessage} disabled={!user} style={{ opacity: user ? 1 : 0.5 }}><Send size={16} strokeWidth={2} /></button>
             </div>
           </div>
         )}
@@ -2195,6 +2248,20 @@ export default function App() {
                       <div className="info-row"><span className="info-label">Bio</span><span className="info-value">{providerProfile.bio}</span></div>
                     </>
                   )}
+                </div>
+
+                {/* Messages Inbox */}
+                <div className="dashboard-section">
+                  <div className="dashboard-section-header">
+                    <div className="dashboard-section-title">Messages</div>
+                  </div>
+                  <div style={{ fontSize: 13, color: "#888", lineHeight: 1.6 }}>
+                    To reply to customer messages, customers initiate chats from your profile. 
+                    Real-time messaging is active — when a customer messages you, open the app and go to their conversation.
+                  </div>
+                  <button className="reg-btn" style={{ marginTop: 14 }} onClick={() => setView("inbox")}>
+                    View My Inbox
+                  </button>
                 </div>
 
                 {/* Reviews */}
