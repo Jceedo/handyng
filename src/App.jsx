@@ -80,6 +80,16 @@ export default function App() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingSending, setBookingSending] = useState(false);
 
+  // Reviews state
+  const [reviews, setReviews] = useState({});
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+
   // Auth state
   const [user, setUser] = useState(null);
   const [authView, setAuthView] = useState("login"); // login | signup
@@ -395,7 +405,7 @@ export default function App() {
       backdrop-filter: blur(16px);
       padding: 14px 20px;
       display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid rgba(212,168,70,0.12);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
     }
     .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #1A1400; letter-spacing: -0.5px; }
     .nav-logo span { color: #D4A846; }
@@ -452,13 +462,13 @@ export default function App() {
 
     .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .service-tile {
-      background: rgba(0,0,0,0.03); border: 1px solid rgba(212,168,70,0.1);
+      background: #fff; border: 1px solid rgba(0,0,0,0.08);
       border-radius: 14px; padding: 14px 8px;
       display: flex; flex-direction: column; align-items: center; gap: 6px;
       cursor: pointer; transition: all 0.2s;
     }
     .service-tile:hover, .service-tile.active {
-      background: rgba(212,168,70,0.1); border-color: rgba(212,168,70,0.5);
+      background: rgba(212,168,70,0.12); border-color: rgba(212,168,70,0.4);
       transform: translateY(-2px);
     }
     .service-tile-icon { font-size: 22px; }
@@ -488,11 +498,11 @@ export default function App() {
 
     .providers-list { padding: 8px 20px 100px; display: flex; flex-direction: column; gap: 12px; }
     .provider-card {
-      background: rgba(0,0,0,0.03); border: 1px solid rgba(212,168,70,0.1);
+      background: #fff; border: 1px solid rgba(0,0,0,0.08);
       border-radius: 18px; padding: 16px; cursor: pointer;
       transition: all 0.2s;
     }
-    .provider-card:hover { border-color: rgba(212,168,70,0.4); background: rgba(212,168,70,0.05); }
+    .provider-card:hover { border-color: rgba(212,168,70,0.4); background: rgba(212,168,70,0.03); }
 
     .provider-card-top { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
     .avatar {
@@ -517,7 +527,7 @@ export default function App() {
     .avail-dot.off { background: #444; }
 
     .provider-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .tag { font-size: 11px; color: #888; background: rgba(212,168,70,0.07); border: 1px solid rgba(212,168,70,0.1); border-radius: 100px; padding: 3px 9px; }
+    .tag { font-size: 11px; color: #888; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08); border-radius: 100px; padding: 3px 9px; }
 
     .chat-btn {
       width: 100%; margin-top: 12px; padding: 13px;
@@ -584,7 +594,7 @@ export default function App() {
 
     .chat-input-area {
       padding: 12px 16px 28px;
-      border-top: 1px solid rgba(212,168,70,0.1);
+      border-top: 1px solid rgba(0,0,0,0.08);
       display: flex; gap: 10px; align-items: center;
       background: rgba(250,250,247,0.97);
     }
@@ -610,7 +620,7 @@ export default function App() {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: 430px;
       background: rgba(250,250,247,0.97); backdrop-filter: blur(16px);
-      border-top: 1px solid rgba(212,168,70,0.1);
+      border-top: 1px solid rgba(0,0,0,0.08);
       display: flex; justify-content: space-around; padding: 10px 0 16px;
       z-index: 99;
     }
@@ -737,6 +747,41 @@ export default function App() {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* ── REVIEWS ── */
+    .reviews-section { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .reviews-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .reviews-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 0.08em; }
+    .write-review-btn { padding: 6px 14px; background: rgba(212,168,70,0.1); border: 1px solid rgba(212,168,70,0.3); border-radius: 100px; font-size: 12px; color: #D4A846; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+    .write-review-btn:hover { background: rgba(212,168,70,0.2); }
+
+    .review-card { padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .review-card:last-child { border-bottom: none; }
+    .review-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .review-author { font-weight: 600; font-size: 14px; color: #1A1400; }
+    .review-date { font-size: 11px; color: #aaa; }
+    .review-stars { display: flex; gap: 2px; margin-bottom: 6px; }
+    .review-star { color: #D4A846; }
+    .review-star.empty { color: #ddd; }
+    .review-comment { font-size: 13px; color: #777; line-height: 1.6; }
+    .no-reviews { font-size: 13px; color: #aaa; text-align: center; padding: 20px 0; }
+
+    .rating-summary { display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(212,168,70,0.06); border-radius: 14px; margin-bottom: 16px; border: 1px solid rgba(212,168,70,0.15); }
+    .rating-big-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 36px; color: #D4A846; }
+    .rating-summary-right { flex: 1; }
+    .rating-summary-stars { display: flex; gap: 3px; margin-bottom: 4px; }
+    .rating-count { font-size: 12px; color: #888; }
+
+    /* ── REVIEW MODAL ── */
+    .review-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+    .review-modal { background: #FAFAF7; border: 1px solid rgba(0,0,0,0.1); border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 430px; }
+    .review-modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 4px; color: #1A1400; }
+    .review-modal-sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+    .star-picker { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; }
+    .star-pick { font-size: 36px; cursor: pointer; transition: transform 0.15s; color: #ddd; }
+    .star-pick.active { color: #D4A846; }
+    .star-pick:hover { transform: scale(1.2); }
+    .rating-label { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; font-weight: 500; min-height: 20px; }
 
     /* ── AUTH ── */
     .auth-container { padding: 40px 24px 100px; display: flex; flex-direction: column; min-height: calc(100vh - 56px); }
@@ -923,6 +968,12 @@ export default function App() {
     if (user) fetchBookings();
   }, [user]);
 
+  useEffect(() => {
+    if (view === "profile" && selectedProvider) {
+      fetchReviews(selectedProvider.id);
+    }
+  }, [view, selectedProvider]);
+
   const sendBooking = async () => {
     if (!user) { setView("auth"); setAuthView("login"); return; }
     if (!bookingMessage.trim()) return;
@@ -948,6 +999,41 @@ export default function App() {
   const updateBookingStatus = async (bookingId, status) => {
     await supabase.from("bookings").update({ status }).eq("id", bookingId);
     fetchBookings();
+  };
+
+  const fetchReviews = async (providerId) => {
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("provider_id", String(providerId))
+      .order("created_at", { ascending: false });
+    if (!error && data) {
+      setReviews(prev => ({ ...prev, [providerId]: data }));
+    }
+  };
+
+  const submitReview = async () => {
+    if (!user) { setView("auth"); setAuthView("login"); return; }
+    if (reviewRating === 0) return;
+    setReviewSubmitting(true);
+    const { error } = await supabase.from("reviews").insert([{
+      provider_id: String(reviewTarget.id),
+      customer_id: user.id,
+      customer_name: user.user_metadata?.full_name || "Anonymous",
+      rating: reviewRating,
+      comment: reviewComment,
+    }]);
+    setReviewSubmitting(false);
+    if (error) { alert("Something went wrong. Try again."); return; }
+    setReviewSuccess(true);
+    fetchReviews(reviewTarget.id);
+  };
+
+  const getAverageRating = (providerId) => {
+    const provReviews = reviews[providerId] || [];
+    if (provReviews.length === 0) return null;
+    const avg = provReviews.reduce((sum, r) => sum + r.rating, 0) / provReviews.length;
+    return avg.toFixed(1);
   };
 
   const serviceLabel = (id) => SERVICES.find(s => s.id === id)?.label || id;
@@ -1300,6 +1386,60 @@ export default function App() {
                   onClick={() => { setBookingTarget(selectedProvider); setBookingSuccess(false); }}>
                   Request Booking
                 </button>
+              )}
+            </div>
+
+            {/* Reviews Section */}
+            <div className="reviews-section">
+              <div className="reviews-header">
+                <div className="reviews-title">Reviews</div>
+                <button className="write-review-btn" onClick={() => {
+                  if (!user) { setView("auth"); setAuthView("login"); return; }
+                  setReviewTarget(selectedProvider);
+                  setReviewRating(0);
+                  setReviewComment("");
+                  setReviewSuccess(false);
+                  setShowReviewModal(true);
+                }}>
+                  + Write a Review
+                </button>
+              </div>
+
+              {/* Rating Summary */}
+              {reviews[selectedProvider.id]?.length > 0 && (
+                <div className="rating-summary">
+                  <div className="rating-big-num">{getAverageRating(selectedProvider.id)}</div>
+                  <div className="rating-summary-right">
+                    <div className="rating-summary-stars">
+                      {[1,2,3,4,5].map(s => (
+                        <Star key={s} size={16} strokeWidth={0} fill={s <= Math.round(getAverageRating(selectedProvider.id)) ? "#D4A846" : "#ddd"} />
+                      ))}
+                    </div>
+                    <div className="rating-count">{reviews[selectedProvider.id].length} review{reviews[selectedProvider.id].length !== 1 ? "s" : ""}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Review list */}
+              {!reviews[selectedProvider.id] ? (
+                <div className="no-reviews">Loading reviews...</div>
+              ) : reviews[selectedProvider.id].length === 0 ? (
+                <div className="no-reviews">No reviews yet. Be the first to review!</div>
+              ) : (
+                reviews[selectedProvider.id].map(review => (
+                  <div key={review.id} className="review-card">
+                    <div className="review-card-top">
+                      <div className="review-author">{review.customer_name}</div>
+                      <div className="review-date">{new Date(review.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</div>
+                    </div>
+                    <div className="review-stars">
+                      {[1,2,3,4,5].map(s => (
+                        <Star key={s} size={14} strokeWidth={0} fill={s <= review.rating ? "#D4A846" : "#ddd"} className={s <= review.rating ? "review-star" : "review-star empty"} />
+                      ))}
+                    </div>
+                    {review.comment && <div className="review-comment">"{review.comment}"</div>}
+                  </div>
+                ))
               )}
             </div>
           </div>
@@ -1670,6 +1810,64 @@ export default function App() {
                     {bookingSending ? "Sending..." : user ? "Send Booking Request" : "Log in to Book"}
                   </button>
                   <button className="reg-btn-outline" onClick={() => { setBookingTarget(null); setBookingMessage(""); }}>Cancel</button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── REVIEW MODAL ── */}
+        {showReviewModal && reviewTarget && (
+          <div className="review-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowReviewModal(false); } }}>
+            <div className="review-modal">
+              {reviewSuccess ? (
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <div style={{ marginBottom: 12, display: "flex", justifyContent: "center" }}><CheckCircle size={56} strokeWidth={1.4} color="#D4A846" /></div>
+                  <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, marginBottom: 6, color: "#1A1400" }}>Review Submitted!</div>
+                  <div style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>Thanks for reviewing {reviewTarget.name.split(" ")[0]}.</div>
+                  <button className="reg-btn" onClick={() => setShowReviewModal(false)}>Done</button>
+                </div>
+              ) : (
+                <>
+                  <div className="review-modal-title">Review {reviewTarget.name.split(" ")[0]}</div>
+                  <div className="review-modal-sub">{serviceLabel(reviewTarget.service)} · {reviewTarget.area}, {reviewTarget.location}</div>
+
+                  {/* Star picker */}
+                  <div className="star-picker">
+                    {[1,2,3,4,5].map(s => (
+                      <Star
+                        key={s}
+                        size={40}
+                        strokeWidth={1.5}
+                        fill={(hoverRating || reviewRating) >= s ? "#D4A846" : "none"}
+                        color={(hoverRating || reviewRating) >= s ? "#D4A846" : "#ddd"}
+                        style={{ cursor: "pointer", transition: "transform 0.15s" }}
+                        onMouseEnter={() => setHoverRating(s)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => setReviewRating(s)}
+                      />
+                    ))}
+                  </div>
+                  <div className="rating-label">
+                    {reviewRating === 1 ? "Poor" : reviewRating === 2 ? "Fair" : reviewRating === 3 ? "Good" : reviewRating === 4 ? "Very Good" : reviewRating === 5 ? "Excellent!" : "Tap to rate"}
+                  </div>
+
+                  <div className="field-group">
+                    <label className="field-label">Comment (optional)</label>
+                    <textarea
+                      className="field-textarea"
+                      placeholder={`Share your experience with ${reviewTarget.name.split(" ")[0]}...`}
+                      value={reviewComment}
+                      onChange={e => setReviewComment(e.target.value)}
+                      maxLength={300}
+                    />
+                    <div className="char-count">{reviewComment.length}/300</div>
+                  </div>
+
+                  <button className="reg-btn" onClick={submitReview} disabled={reviewSubmitting || reviewRating === 0}>
+                    {reviewSubmitting ? "Submitting..." : reviewRating === 0 ? "Select a rating first" : "Submit Review"}
+                  </button>
+                  <button className="reg-btn-outline" onClick={() => setShowReviewModal(false)}>Cancel</button>
                 </>
               )}
             </div>
