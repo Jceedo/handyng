@@ -1671,12 +1671,18 @@ export default function App() {
             </div>
 
             <div className="profile-cta">
-              <button className="chat-btn"
-                disabled={!selectedProvider.available}
-                onClick={() => { setChatTarget(selectedProvider); setView("chat"); }}>
-                {selectedProvider.available ? "Chat with " + selectedProvider.name.split(" ")[0] : "Currently Unavailable"}
-              </button>
-              {selectedProvider.available && (
+              {selectedProvider.isReal ? (
+                <button className="chat-btn"
+                  disabled={!selectedProvider.available}
+                  onClick={() => { setChatTarget(selectedProvider); setView("chat"); }}>
+                  {selectedProvider.available ? "Chat with " + selectedProvider.name.split(" ")[0] : "Currently Unavailable"}
+                </button>
+              ) : (
+                <button className="chat-btn" style={{ background: "rgba(0,0,0,0.06)", color: "#aaa", cursor: "not-allowed" }} disabled>
+                  Demo Provider — Not Available for Chat
+                </button>
+              )}
+              {selectedProvider.available && selectedProvider.isReal && (
                 <button className="chat-btn" style={{ marginTop: 10, background: "transparent", border: "1px solid rgba(212,168,70,0.4)", color: "#D4A846" }}
                   onClick={() => { setBookingTarget(selectedProvider); setBookingSuccess(false); }}>
                   Request Booking
