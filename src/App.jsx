@@ -1,9 +1,31 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
+import {
+  Zap, Wrench, Hammer, Settings, Sparkles, Paintbrush,
+  Wind, Flame, Cog, Grid, Shirt, Shield,
+  Search, Home, BookOpen, User, Plus, ArrowLeft,
+  Star, MapPin, CheckCircle, Circle, Send, ChevronRight,
+  LogOut, Phone, Clock, Menu, X, Lock
+} from "lucide-react";
 
 const SUPABASE_URL = "https://wikdqgzamwwjubrivrwo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa2RxZ3phbXd3anVicml2cndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzQxOTQsImV4cCI6MjA4OTYxMDE5NH0.EOoGbDazRpyVHd4p4M94jucojOUhUbk-BvqycY0SW88";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const SERVICE_ICONS = {
+  electrician: Zap,
+  plumber: Wrench,
+  carpenter: Hammer,
+  mechanic: Settings,
+  cleaner: Sparkles,
+  painter: Paintbrush,
+  ac_repair: Wind,
+  welder: Flame,
+  generator: Cog,
+  tiler: Grid,
+  laundry: Shirt,
+  security: Shield,
+};
 
 const SERVICES = [
   { id: "electrician", label: "Electrician", icon: "⚡" },
@@ -391,7 +413,7 @@ export default function App() {
       border-radius: 100px; padding: 4px 12px; font-size: 12px; color: #D4A846;
       margin-bottom: 16px; font-weight: 500;
     }
-    .hero-badge::before { content: '●'; font-size: 8px; }
+    .hero-badge::before { content: ''; }
     .hero h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.15; margin-bottom: 10px; letter-spacing: -1px; }
     .hero h1 em { color: #D4A846; font-style: normal; }
     .hero p { color: #777; font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
@@ -486,7 +508,7 @@ export default function App() {
 
     .provider-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
     .rating { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
-    .rating::before { content: '★'; color: #D4A846; }
+    .rating-star { color: #D4A846; margin-right: 3px; }
     .jobs { font-size: 12px; color: #666; }
     .price { font-size: 13px; font-weight: 600; color: #D4A846; margin-left: auto; }
 
@@ -941,8 +963,8 @@ export default function App() {
           {view === "home" || view === "browse" || view === "register" || view === "auth" || view === "userprofile" || view === "bookings" ? (
             <div className="nav-logo">Handy<span>NG</span></div>
           ) : (
-            <button className="nav-back" onClick={() => setView(view === "chat" ? "profile" : "browse")}>
-              ← Back
+<button className="nav-back" onClick={() => setView(view === "chat" ? "profile" : "browse")}>
+              <ArrowLeft size={16} strokeWidth={2} style={{marginRight:4}}/> Back
             </button>
           )}
           {(view === "home" || view === "browse") && (
@@ -958,7 +980,7 @@ export default function App() {
             <div style={{ fontSize: 13, color: "#666" }}>{serviceLabel(selectedProvider.service)}</div>
           )}
           {view === "chat" && chatTarget && (
-            <div style={{ fontSize: 13, color: "#D4A846" }}>🔒 Secure Chat</div>
+            <div style={{ fontSize: 13, color: "#D4A846", display:"flex", alignItems:"center", gap:4 }}><Lock size={13} strokeWidth={2}/>Secure Chat</div>
           )}
         </div>
         )}
@@ -978,7 +1000,7 @@ export default function App() {
 
             {/* HERO */}
             <div style={{ background: "radial-gradient(ellipse 100% 70% at 50% 0%, rgba(212,168,70,0.14) 0%, transparent 65%)", padding: "52px 24px 40px", textAlign: "center" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(212,168,70,0.1)", border: "1px solid rgba(212,168,70,0.3)", borderRadius: 100, padding: "5px 14px", fontSize: 12, color: "#D4A846", marginBottom: 20, fontWeight: 600 }}>🇳🇬 Nigeria's #1 Service Marketplace</div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(212,168,70,0.1)", border: "1px solid rgba(212,168,70,0.3)", borderRadius: 100, padding: "5px 14px", fontSize: 12, color: "#D4A846", marginBottom: 20, fontWeight: 600 }}>Nigeria's #1 Service Marketplace</div>
               <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "clamp(36px, 6vw, 64px)", lineHeight: 1.1, letterSpacing: -1, marginBottom: 14, color: "#1A1400" }}>
                 List. Find. <span style={{ color: "#D4A846" }}>Connect.</span>
               </h1>
@@ -993,7 +1015,7 @@ export default function App() {
                   style={{ flex: 1, border: "none", outline: "none", padding: "14px 16px", fontSize: 14, fontFamily: "DM Sans, sans-serif", color: "#0A0A0A", background: "transparent" }}
                   onFocus={() => setView("browse")}
                 />
-                <button onClick={() => setView("browse")} style={{ padding: "14px 20px", background: "#D4A846", border: "none", cursor: "pointer", fontSize: 18 }}>🔍</button>
+                <button onClick={() => setView("browse")} style={{ padding: "14px 20px", background: "#D4A846", border: "none", cursor: "pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Search size={20} strokeWidth={2} color="#0A0A0A" /></button>
               </div>
 
               {/* Popular tags */}
@@ -1018,23 +1040,25 @@ export default function App() {
             <div style={{ padding: "clamp(24px, 4vw, 60px) clamp(20px, 8vw, 120px) 0", background: "#FAFAF7" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, color: "#1A1400" }}>Featured Categories</div>
-                <span onClick={() => setView("browse")} style={{ fontSize: 13, color: "#D4A846", cursor: "pointer" }}>View All →</span>
+                <span onClick={() => setView("browse")} style={{ fontSize: 13, color: "#D4A846", cursor: "pointer" }}>View All</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10 }}>
                 {[
-                  { id: "electrician", icon: "⚡", label: "Electrician", bg: "#FFF8E7" },
-                  { id: "plumber", icon: "🔧", label: "Plumber", bg: "#EFF4FF" },
-                  { id: "carpenter", icon: "🪚", label: "Carpenter", bg: "#FFF3E7" },
-                  { id: "cleaner", icon: "🧹", label: "Cleaner", bg: "#EFFFF2" },
-                  { id: "mechanic", icon: "🔩", label: "Mechanic", bg: "#FFF8E0" },
-                  { id: "ac_repair", icon: "❄️", label: "AC Repair", bg: "#EFF8FF" },
-                ].map(cat => (
+                  { id: "electrician", label: "Electrician", bg: "#FFF8E7", color: "#D4A846" },
+                  { id: "plumber", label: "Plumber", bg: "#EFF4FF", color: "#4A7FD4" },
+                  { id: "carpenter", label: "Carpenter", bg: "#FFF3E7", color: "#D4804A" },
+                  { id: "cleaner", label: "Cleaner", bg: "#EFFFF2", color: "#4AD47A" },
+                  { id: "mechanic", label: "Mechanic", bg: "#FFF8E0", color: "#D4B84A" },
+                  { id: "ac_repair", label: "AC Repair", bg: "#EFF8FF", color: "#4AB8D4" },
+                ].map(cat => {
+                  const Icon = SERVICE_ICONS[cat.id];
+                  return (
                   <div key={cat.id} onClick={() => { setSelectedService(cat.id); setView("browse"); }}
                     style={{ background: cat.bg, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 16, padding: "20px 12px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>{cat.icon}</div>
+                    <div style={{ marginBottom: 8, display:"flex", justifyContent:"center" }}>{Icon && <Icon size={28} strokeWidth={1.6} color={cat.color} />}</div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>{cat.label}</div>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
 
@@ -1043,12 +1067,12 @@ export default function App() {
               <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 6, textAlign: "center", color: "#1A1400" }}>How HandyNG Works</div>
               <div style={{ fontSize: 13, color: "#666", textAlign: "center", marginBottom: 24 }}>Simple. Fast. Reliable.</div>
               {[
-                { num: "01", title: "Find a Provider", desc: "Search by service and city. Browse verified profiles with ratings and reviews.", icon: "🔍" },
-                { num: "02", title: "Connect & Chat", desc: "Message providers directly in-app. No need to share your phone number.", icon: "💬" },
-                { num: "03", title: "Book & Get it Done", desc: "Send a booking request, agree on details, and get the job done.", icon: "✅" },
+                { num: "01", title: "Find a Provider", desc: "Search by service and city. Browse verified profiles with ratings and reviews.", Icon: Search },
+                { num: "02", title: "Connect & Chat", desc: "Message providers directly in-app. No need to share your phone number.", Icon: Phone },
+                { num: "03", title: "Book & Get it Done", desc: "Send a booking request, agree on details, and get the job done.", Icon: CheckCircle },
               ].map(step => (
                 <div key={step.num} style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 20, background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 16, padding: 16 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(212,168,70,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{step.icon}</div>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(212,168,70,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{step.Icon && <step.Icon size={22} strokeWidth={1.8} color="#D4A846" />}</div>
                   <div>
                     <div style={{ fontSize: 11, color: "#D4A846", fontWeight: 700, marginBottom: 4 }}>{step.num}</div>
                     <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#1A1400" }}>{step.title}</div>
@@ -1060,7 +1084,7 @@ export default function App() {
 
             {/* ARE YOU A PROVIDER */}
             <div style={{ margin: "32px 20px 0", background: "linear-gradient(135deg, rgba(212,168,70,0.12), rgba(212,168,70,0.04))", border: "1px solid rgba(212,168,70,0.25)", borderRadius: 20, padding: "28px 20px", textAlign: "center" }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🔧</div>
+              <div style={{ marginBottom: 12, display:"flex", justifyContent:"center" }}><Wrench size={36} strokeWidth={1.6} color="#D4A846" /></div>
               <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Are you a service provider?</div>
               <div style={{ fontSize: 13, color: "#888", lineHeight: 1.7, marginBottom: 20 }}>Join thousands of skilled professionals already earning on HandyNG. Register for free and start getting hired today.</div>
               <button onClick={() => { setView("register"); setRegStep(1); setRegSuccess(false); }} style={{ padding: "13px 28px", background: "#D4A846", border: "none", borderRadius: 12, fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 14, color: "#0A0A0A", cursor: "pointer" }}>Register as a Provider</button>
@@ -1090,7 +1114,7 @@ export default function App() {
               <h1>Find skilled hands <em>near you.</em></h1>
               <p>Connect with verified electricians, plumbers, mechanics and more — in your city, ready today.</p>
               <div className="search-bar">
-                <span className="search-bar-icon">🔍</span>
+                <Search size={16} strokeWidth={2} style={{color:"#D4A846", flexShrink:0}} />
                 <input
                   placeholder="Search service or provider..."
                   value={searchQuery}
@@ -1117,14 +1141,16 @@ export default function App() {
             <div className="section">
               <div className="section-title">
                 Services
-                <span onClick={() => setView("browse")}>See all →</span>
+                <span onClick={() => setView("browse")}>See all</span>
               </div>
               <div className="services-grid">
                 {SERVICES.map(s => (
                   <div key={s.id}
                     className={`service-tile ${selectedService === s.id ? "active" : ""}`}
                     onClick={() => { setSelectedService(selectedService === s.id ? "" : s.id); setView("browse"); }}>
-                    <div className="service-tile-icon">{s.icon}</div>
+                    <div className="service-tile-icon">
+                      {(() => { const Icon = SERVICE_ICONS[s.id]; return Icon ? <Icon size={22} strokeWidth={1.8} /> : null; })()}
+                    </div>
                     <div className="service-tile-label">{s.label}</div>
                   </div>
                 ))}
@@ -1141,11 +1167,11 @@ export default function App() {
                     <div className="provider-info">
                       <div className="provider-name">
                         {provider.name}
-                        {provider.verified && <span className="verified-badge">✓ Verified</span>}
+                        {provider.verified && <span className="verified-badge"><CheckCircle size={9} strokeWidth={3} style={{display:"inline", marginRight:2}}/>Verified</span>}
                       </div>
                       <div className="provider-sub">{serviceLabel(provider.service)} · {provider.area}, {provider.location}</div>
                     </div>
-                    <span className={`avail-dot ${provider.available ? "on" : "off"}`}></span>
+                    <span className={`avail-dot ${provider.available ? "on" : "off"}`} />
                   </div>
                   <div className="provider-meta">
                     <span className="rating">{provider.rating}</span>
@@ -1163,7 +1189,7 @@ export default function App() {
           <div style={{ paddingBottom: 80 }}>
             <div className="browse-header">
               <div className="search-bar" style={{ marginBottom: 12 }}>
-                <span className="search-bar-icon">🔍</span>
+                <Search size={16} strokeWidth={2} style={{color:"#D4A846", flexShrink:0}} />
                 <input
                   placeholder="Search service or provider..."
                   value={searchQuery}
@@ -1175,7 +1201,8 @@ export default function App() {
                 {SERVICES.map(s => (
                   <button key={s.id} className={`filter-chip ${selectedService === s.id ? "active" : ""}`}
                     onClick={() => setSelectedService(selectedService === s.id ? "" : s.id)}>
-                    {s.icon} {s.label}
+                    {(() => { const Icon = SERVICE_ICONS[s.id]; return Icon ? <Icon size={12} strokeWidth={2} style={{display:"inline", marginRight:4}} /> : null; })()}
+                    {s.label}
                   </button>
                 ))}
               </div>
@@ -1183,7 +1210,7 @@ export default function App() {
                 {LOCATIONS.map(loc => (
                   <button key={loc} className={`filter-chip ${selectedLocation === loc ? "active" : ""}`}
                     onClick={() => setSelectedLocation(selectedLocation === loc ? "" : loc)}>
-                    📍 {loc}
+                    {loc}
                   </button>
                 ))}
               </div>
@@ -1191,7 +1218,7 @@ export default function App() {
 
             {filteredProviders.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-state-icon">🔍</div>
+                <div className="empty-state-icon"><Search size={48} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                 <h3>No providers found</h3>
                 <p>Try a different service or location</p>
               </div>
@@ -1205,11 +1232,11 @@ export default function App() {
                       <div className="provider-info">
                         <div className="provider-name">
                           {provider.name}
-                          {provider.verified && <span className="verified-badge">✓</span>}
+                          {provider.verified && <span className="verified-badge"><CheckCircle size={9} strokeWidth={3} style={{display:"inline", marginRight:2}}/>✓</span>}
                         </div>
                         <div className="provider-sub">{serviceLabel(provider.service)} · {provider.area}, {provider.location}</div>
                       </div>
-                      <span className={`avail-dot ${provider.available ? "on" : "off"}`}></span>
+                      <span className={`avail-dot ${provider.available ? "on" : "off"}`} />
                     </div>
                     <div className="provider-meta">
                       <span className="rating">{provider.rating}</span>
@@ -1236,7 +1263,7 @@ export default function App() {
                 {selectedProvider.verified && <span className="verified-badge" style={{ marginLeft: 8, fontSize: 11 }}>✓ Verified</span>}
               </div>
               <div className="profile-service">{serviceLabel(selectedProvider.service)}</div>
-              <div className="profile-location">📍 {selectedProvider.area}, {selectedProvider.location}</div>
+              <div className="profile-location"><MapPin size={13} strokeWidth={2} style={{display:"inline", marginRight:4, color:"#D4A846"}}/>{selectedProvider.area}, {selectedProvider.location}</div>
             </div>
 
             <div className="profile-stats">
@@ -1266,12 +1293,12 @@ export default function App() {
               <button className="chat-btn"
                 disabled={!selectedProvider.available}
                 onClick={() => { setChatTarget(selectedProvider); setView("chat"); }}>
-                {selectedProvider.available ? "💬 Chat with " + selectedProvider.name.split(" ")[0] : "Currently Unavailable"}
+                {selectedProvider.available ? "Chat with " + selectedProvider.name.split(" ")[0] : "Currently Unavailable"}
               </button>
               {selectedProvider.available && (
                 <button className="chat-btn" style={{ marginTop: 10, background: "transparent", border: "1px solid rgba(212,168,70,0.4)", color: "#D4A846" }}
                   onClick={() => { setBookingTarget(selectedProvider); setBookingSuccess(false); }}>
-                  📅 Request Booking
+                  Request Booking
                 </button>
               )}
             </div>
@@ -1307,7 +1334,7 @@ export default function App() {
                 onChange={e => setInputMsg(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && sendMessage()}
               />
-              <button className="send-btn" onClick={sendMessage}>➤</button>
+              <button className="send-btn" onClick={sendMessage}><Send size={16} strokeWidth={2} /></button>
             </div>
           </div>
         )}
@@ -1317,7 +1344,7 @@ export default function App() {
           <div style={{ overflowY: "auto", height: "calc(100vh - 56px)", paddingBottom: 80 }}>
             {regSuccess ? (
               <div className="success-screen">
-                <div className="success-icon">🎉</div>
+                <div className="success-icon"><CheckCircle size={64} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                 <div className="success-title">You're registered!</div>
                 <div className="success-sub">Your profile is under review. We'll notify you within 24 hours once you're verified and live on HandyNG.</div>
                 <div className="success-card">
@@ -1360,7 +1387,7 @@ export default function App() {
                           </>
                         ) : (
                           <>
-                            <div className="photo-upload-icon">📸</div>
+                            <div className="photo-upload-icon"><User size={32} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                             <div className="photo-upload-text"><span>Tap to upload</span> your photo</div>
                           </>
                         )}
@@ -1379,7 +1406,7 @@ export default function App() {
                       {formErrors.phone && <div className="field-error">{formErrors.phone}</div>}
                     </div>
 
-                    <button className="reg-btn" onClick={handleNextStep}>Continue →</button>
+                    <button className="reg-btn" onClick={handleNextStep}>Continue</button>
                   </>
                 )}
 
@@ -1410,8 +1437,8 @@ export default function App() {
                       {formErrors.area && <div className="field-error">{formErrors.area}</div>}
                     </div>
 
-                    <button className="reg-btn" onClick={handleNextStep}>Continue →</button>
-                    <button className="reg-btn-outline" onClick={() => setRegStep(1)}>← Back</button>
+                    <button className="reg-btn" onClick={handleNextStep}>Continue</button>
+                    <button className="reg-btn-outline" onClick={() => setRegStep(1)}>Back</button>
                   </>
                 )}
 
@@ -1458,7 +1485,7 @@ export default function App() {
                     </div>
 
                     <button className="reg-btn" onClick={handleSubmitReg} disabled={regLoading}>{regLoading ? "Saving..." : "Submit Registration 🎉"}</button>
-                    <button className="reg-btn-outline" onClick={() => setRegStep(2)}>← Back</button>
+                    <button className="reg-btn-outline" onClick={() => setRegStep(2)}>Back</button>
                   </>
                 )}
               </div>
@@ -1494,8 +1521,8 @@ export default function App() {
                   <div className="auth-title">Create account</div>
                   <div className="auth-sub">Join HandyNG today</div>
                   <div className="role-toggle">
-                    <button className={`role-btn ${authRole === "customer" ? "active" : ""}`} onClick={() => setAuthRole("customer")}>👤 Customer</button>
-                    <button className={`role-btn ${authRole === "provider" ? "active" : ""}`} onClick={() => setAuthRole("provider")}>🔧 Provider</button>
+                    <button className={`role-btn ${authRole === "customer" ? "active" : ""}`} onClick={() => setAuthRole("customer")}><User size={14} strokeWidth={2} style={{display:"inline", marginRight:4}}/>Customer</button>
+                    <button className={`role-btn ${authRole === "provider" ? "active" : ""}`} onClick={() => setAuthRole("provider")}><Wrench size={14} strokeWidth={2} style={{display:"inline", marginRight:4}}/>Provider</button>
                   </div>
                   {authError && <div className="auth-error">{authError}</div>}
                   <div className="field-group">
@@ -1533,31 +1560,31 @@ export default function App() {
                 </div>
                 <div className="profile-tab-menu">
                   <div className="profile-menu-item" onClick={() => setView("browse")}>
-                    <span className="profile-menu-icon">🔍</span>
+                    <span className="profile-menu-icon"><Search size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
                     <span className="profile-menu-label">Browse Services</span>
-                    <span className="profile-menu-arrow">→</span>
+                    <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
                   </div>
                   <div className="profile-menu-item" onClick={() => setView("register")}>
-                    <span className="profile-menu-icon">➕</span>
+                    <span className="profile-menu-icon"><Plus size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
                     <span className="profile-menu-label">Register as Provider</span>
-                    <span className="profile-menu-arrow">→</span>
+                    <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
                   </div>
-                  <div className="profile-menu-item">
-                    <span className="profile-menu-icon">📋</span>
+                  <div className="profile-menu-item" onClick={() => setView("bookings")}>
+                    <span className="profile-menu-icon"><BookOpen size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
                     <span className="profile-menu-label">My Bookings</span>
-                    <span className="profile-menu-arrow">→</span>
+                    <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
                   </div>
                   <div className="profile-menu-item">
-                    <span className="profile-menu-icon">⚙️</span>
+                    <span className="profile-menu-icon"><Settings size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
                     <span className="profile-menu-label">Settings</span>
-                    <span className="profile-menu-arrow">→</span>
+                    <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
                   </div>
                 </div>
-                <button className="logout-btn" onClick={handleLogout}>Log Out</button>
+                <button className="logout-btn" onClick={handleLogout}><LogOut size={16} strokeWidth={2} style={{display:"inline", marginRight:8}}/>Log Out</button>
               </div>
             ) : (
               <div className="empty-state">
-                <div className="empty-state-icon">👤</div>
+                <div className="empty-state-icon"><User size={48} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                 <h3>Not logged in</h3>
                 <p style={{ marginBottom: 24 }}>Create an account or log in to access your profile</p>
                 <button className="reg-btn" style={{ maxWidth: 280, margin: "0 auto" }} onClick={() => { setAuthView("signup"); setView("auth"); }}>Get Started</button>
@@ -1574,16 +1601,16 @@ export default function App() {
               <div className="bookings-sub">{user ? "Your active and past job requests" : "Log in to view your bookings"}</div>
               {!user ? (
                 <div className="empty-state">
-                  <div className="empty-state-icon">🔑</div>
+                  <div className="empty-state-icon"><Lock size={48} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                   <h3>Not logged in</h3>
                   <p style={{ marginBottom: 24 }}>Log in to send and manage bookings</p>
                   <button className="reg-btn" style={{ maxWidth: 280, margin: "0 auto" }} onClick={() => { setAuthView("login"); setView("auth"); }}>Log In</button>
                 </div>
               ) : loadingBookings ? (
-                <div className="empty-state"><div className="empty-state-icon">⏳</div><h3>Loading...</h3></div>
+                <div className="empty-state"><div className="empty-state-icon"><Clock size={48} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div><h3>Loading...</h3></div>
               ) : bookings.length === 0 ? (
                 <div className="empty-state">
-                  <div className="empty-state-icon">📋</div>
+                  <div className="empty-state-icon"><BookOpen size={48} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                   <h3>No bookings yet</h3>
                   <p style={{ marginBottom: 24 }}>Browse services and send a booking request to get started</p>
                   <button className="reg-btn" style={{ maxWidth: 280, margin: "0 auto" }} onClick={() => setView("browse")}>Browse Services</button>
@@ -1602,8 +1629,8 @@ export default function App() {
                     <div className="booking-meta">{new Date(booking.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</div>
                     {booking.customer_id !== user?.id && booking.status === "pending" && (
                       <div className="booking-actions">
-                        <button className="booking-accept-btn" onClick={() => updateBookingStatus(booking.id, "accepted")}>✓ Accept</button>
-                        <button className="booking-decline-btn" onClick={() => updateBookingStatus(booking.id, "declined")}>✕ Decline</button>
+                        <button className="booking-accept-btn" onClick={() => updateBookingStatus(booking.id, "accepted")}><CheckCircle size={14} strokeWidth={2} style={{display:"inline", marginRight:4}}/>Accept</button>
+                        <button className="booking-decline-btn" onClick={() => updateBookingStatus(booking.id, "declined")}><X size={14} strokeWidth={2} style={{display:"inline", marginRight:4}}/>Decline</button>
                       </div>
                     )}
                   </div>
@@ -1619,7 +1646,7 @@ export default function App() {
             <div className="booking-modal">
               {bookingSuccess ? (
                 <div className="booking-modal-success">
-                  <div className="booking-modal-success-icon">🎉</div>
+                  <div className="booking-modal-success-icon"><CheckCircle size={48} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div>
                   <div className="booking-modal-success-title">Request Sent!</div>
                   <div className="booking-modal-success-sub">Your booking request has been sent to {bookingTarget.name}. They'll respond shortly.</div>
                   <button className="reg-btn" style={{ marginTop: 24 }} onClick={() => { setBookingTarget(null); setBookingSuccess(false); setView("bookings"); }}>View Bookings</button>
@@ -1653,19 +1680,19 @@ export default function App() {
         {view !== "chat" && view !== "landing" && (
           <div className="bottom-bar">
             <button className={`bottom-tab ${view === "home" ? "active" : ""}`} onClick={() => setView("home")}>
-              <span className="bottom-tab-icon">🏠</span>
+              <Home size={22} strokeWidth={1.8} />
               <span className="bottom-tab-label">Home</span>
             </button>
             <button className={`bottom-tab ${view === "browse" ? "active" : ""}`} onClick={() => setView("browse")}>
-              <span className="bottom-tab-icon">🔍</span>
+              <Search size={22} strokeWidth={1.8} />
               <span className="bottom-tab-label">Browse</span>
             </button>
             <button className={`bottom-tab ${view === "bookings" ? "active" : ""}`} onClick={() => setView("bookings")}>
-              <span className="bottom-tab-icon">📋</span>
+              <BookOpen size={22} strokeWidth={1.8} />
               <span className="bottom-tab-label">Bookings</span>
             </button>
             <button className={`bottom-tab ${view === "userprofile" || view === "auth" ? "active" : ""}`} onClick={() => setView("userprofile")}>
-              <span className="bottom-tab-icon">{user ? "👤" : "🔑"}</span>
+              {user ? <User size={22} strokeWidth={1.8} /> : <Lock size={22} strokeWidth={1.8} />}
               <span className="bottom-tab-label">{user ? "Profile" : "Login"}</span>
             </button>
           </div>
