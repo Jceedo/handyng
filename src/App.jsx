@@ -90,6 +90,22 @@ export default function App() {
   const [editSaving, setEditSaving] = useState(false);
   const [editSuccess, setEditSuccess] = useState(false);
 
+  // Safety state
+  const [showSOS, setShowSOS] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState(false);
+  const [trustedContact, setTrustedContact] = useState(null);
+  const [showTrustedModal, setShowTrustedModal] = useState(false);
+  const [tcName, setTcName] = useState("");
+  const [tcPhone, setTcPhone] = useState("");
+  const [tcSaving, setTcSaving] = useState(false);
+  const [activeCheckin, setActiveCheckin] = useState(null);
+  const [checkinLoading, setCheckinLoading] = useState(false);
+
   // Admin state
   const [isAdmin, setIsAdmin] = useState(false);
   const [allProviders, setAllProviders] = useState([]);
@@ -231,56 +247,70 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (view === "chat" && chatTarget && user) {
+    let channel = null;
+
+    const setupChat = async () => {
+      if (view !== "chat" || !chatTarget || !user) return;
       const convId = [user.id, String(chatTarget.id)].sort().join("_");
       setChatLoading(true);
 
       // Fetch existing messages
-      supabase
+      const { data } = await supabase
         .from("messages")
         .select("*")
         .eq("conversation_id", convId)
-        .order("created_at", { ascending: true })
-        .then(({ data }) => {
-          if (data) {
-            setMessages(prev => ({
-              ...prev,
-              [chatTarget.id]: data.map(m => ({
-                from: m.sender_id === user.id ? "user" : "provider",
-                text: m.content,
-                time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                id: m.id,
-              }))
-            }));
-          }
-          setChatLoading(false);
-        });
+        .order("created_at", { ascending: true });
 
-      // Subscribe to real-time messages
-      const channel = supabase
-        .channel(`chat_${convId}`)
+      if (data) {
+        setMessages(prev => ({
+          ...prev,
+          [chatTarget.id]: data.map(m => ({
+            from: m.sender_id === user.id ? "user" : "provider",
+            text: m.content,
+            time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            id: m.id,
+          }))
+        }));
+      }
+      setChatLoading(false);
+
+      // Subscribe to real-time new messages
+      channel = supabase
+        .channel("chat_" + convId + "_" + Date.now())
         .on("postgres_changes", {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `conversation_id=eq.${convId}`,
+          filter: "conversation_id=eq." + convId,
         }, (payload) => {
           const m = payload.new;
-          setMessages(prev => ({
-            ...prev,
-            [chatTarget.id]: [...(prev[chatTarget.id] || []), {
-              from: m.sender_id === user.id ? "user" : "provider",
-              text: m.content,
-              time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-              id: m.id,
-            }]
-          }));
+          const userId = user.id;
+          setMessages(prev => {
+            const existing = prev[chatTarget.id] || [];
+            // Avoid duplicates
+            if (existing.some(msg => msg.id === m.id)) return prev;
+            return {
+              ...prev,
+              [chatTarget.id]: [...existing, {
+                from: m.sender_id === userId ? "user" : "provider",
+                text: m.content,
+                time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                id: m.id,
+              }]
+            };
+          });
         })
-        .subscribe();
+        .subscribe((status) => {
+          console.log("Realtime status:", status);
+        });
+    };
 
-      return () => supabase.removeChannel(channel);
-    }
-  }, [view, chatTarget, user]);
+    setupChat();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [view, chatTarget?.id, user?.id]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -875,6 +905,40 @@ export default function App() {
     .star-pick:hover { transform: scale(1.2); }
     .rating-label { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; font-weight: 500; min-height: 20px; }
 
+    /* ── SAFETY ── */
+    .sos-btn { position: fixed; bottom: 90px; right: 16px; z-index: 150; width: 52px; height: 52px; background: #ff3b3b; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 20px rgba(255,59,59,0.4); transition: all 0.2s; }
+    .sos-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(255,59,59,0.5); }
+    .sos-btn-label { font-size: 11px; font-weight: 800; color: #fff; font-family: 'Syne', sans-serif; }
+    .sos-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .sos-modal { background: #fff; border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 380px; }
+    .sos-modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #ff3b3b; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .sos-modal-sub { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.6; }
+    .sos-action-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer; margin-bottom: 10px; transition: all 0.2s; }
+    .sos-call-btn { background: #ff3b3b; color: #fff; }
+    .sos-call-btn:hover { background: #e02020; }
+    .sos-sms-btn { background: rgba(255,59,59,0.1); color: #ff3b3b; border: 1px solid rgba(255,59,59,0.3) !important; }
+
+    .report-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+    .report-modal { background: #FAFAF7; border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 430px; }
+    .report-reason-option { padding: 12px 16px; background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; margin-bottom: 8px; cursor: pointer; font-size: 14px; color: #1A1400; transition: all 0.2s; }
+    .report-reason-option.selected { background: rgba(255,59,59,0.08); border-color: rgba(255,59,59,0.3); color: #ff3b3b; font-weight: 600; }
+
+    .checkin-banner { background: linear-gradient(135deg, #1A1400, #3a2e00); margin: 10px 16px; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .checkin-banner-text { font-size: 13px; color: #F5EDD8; font-weight: 500; }
+    .checkin-banner-sub { font-size: 11px; color: rgba(245,237,216,0.6); margin-top: 2px; }
+    .checkin-end-btn { padding: 8px 14px; background: rgba(255,59,59,0.2); color: #ff8080; border: 1px solid rgba(255,59,59,0.3); border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Syne', sans-serif; }
+
+    .safety-section { padding: 16px; background: rgba(255,59,59,0.04); border: 1px solid rgba(255,59,59,0.12); border-radius: 16px; margin: 0 16px 16px; }
+    .safety-section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: #ff6b6b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .safety-btn { width: 100%; padding: 11px; background: transparent; border: 1px solid rgba(255,59,59,0.25); border-radius: 10px; color: #ff6b6b; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 8px; font-family: 'DM Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .safety-btn:hover { background: rgba(255,59,59,0.08); }
+    .safety-btn:last-child { margin-bottom: 0; }
+
+    .trusted-contact-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(0,200,100,0.06); border: 1px solid rgba(0,200,100,0.2); border-radius: 12px; margin-bottom: 8px; }
+    .trusted-contact-info { flex: 1; }
+    .trusted-contact-name { font-size: 13px; font-weight: 600; color: #1A1400; }
+    .trusted-contact-phone { font-size: 11px; color: #888; }
+
     /* ── ADMIN PANEL ── */
     .admin-container { padding: 0 0 100px; background: #F5F5F0; min-height: 100vh; }
     .admin-hero { background: linear-gradient(135deg, #1A0A0A, #3a0000); padding: 28px 20px 20px; color: #F5EDD8; }
@@ -1278,6 +1342,75 @@ export default function App() {
   useEffect(() => {
     if (view === "dashboard") fetchProviderProfile();
   }, [view, user]);
+
+  // Safety functions
+  useEffect(() => {
+    const fetchTrustedContact = async () => {
+      if (!user) return;
+      const { data } = await supabase.from("trusted_contacts").select("*").eq("user_id", user.id).single();
+      if (data) setTrustedContact(data);
+    };
+    fetchTrustedContact();
+    const fetchActiveCheckin = async () => {
+      if (!user) return;
+      const { data } = await supabase.from("checkins").select("*").eq("customer_id", user.id).eq("status", "active").single();
+      if (data) setActiveCheckin(data);
+    };
+    fetchActiveCheckin();
+  }, [user]);
+
+  const saveTrustedContact = async () => {
+    if (!tcName.trim() || !tcPhone.trim()) return;
+    setTcSaving(true);
+    if (trustedContact) {
+      await supabase.from("trusted_contacts").update({ name: tcName, phone: tcPhone }).eq("id", trustedContact.id);
+    } else {
+      await supabase.from("trusted_contacts").insert([{ user_id: user.id, name: tcName, phone: tcPhone }]);
+    }
+    setTrustedContact({ name: tcName, phone: tcPhone });
+    setTcSaving(false);
+    setShowTrustedModal(false);
+  };
+
+  const submitReport = async () => {
+    if (!user || !reportReason) return;
+    setReportSubmitting(true);
+    await supabase.from("reports").insert([{
+      reporter_id: user.id,
+      reporter_name: user.user_metadata?.full_name || user.email,
+      provider_id: String(reportTarget.id),
+      provider_name: reportTarget.name,
+      reason: reportReason,
+      details: reportDetails,
+    }]);
+    setReportSubmitting(false);
+    setReportSuccess(true);
+  };
+
+  const startCheckin = async (provider) => {
+    if (!user) { setView("auth"); setAuthView("login"); return; }
+    setCheckinLoading(true);
+    const { data } = await supabase.from("checkins").insert([{
+      customer_id: user.id,
+      provider_id: String(provider.id),
+      provider_name: provider.name,
+      checked_in_at: new Date().toISOString(),
+      status: "active",
+    }]).select().single();
+    if (data) setActiveCheckin(data);
+    setCheckinLoading(false);
+  };
+
+  const endCheckin = async () => {
+    if (!activeCheckin) return;
+    await supabase.from("checkins").update({ checked_out_at: new Date().toISOString(), status: "completed" }).eq("id", activeCheckin.id);
+    setActiveCheckin(null);
+  };
+
+  const suspendIfLowRating = (provider) => {
+    const avg = getAverageRating(provider.id);
+    return avg && parseFloat(avg) < 3.5;
+  };
 
   // Check if user is admin
   useEffect(() => {
@@ -1689,6 +1822,44 @@ export default function App() {
                 </button>
               )}
             </div>
+
+            {/* Active Checkin Banner */}
+            {activeCheckin && activeCheckin.provider_id === String(selectedProvider.id) && (
+              <div className="checkin-banner" style={{ margin: "10px 20px" }}>
+                <div>
+                  <div className="checkin-banner-text">✅ Job in progress with {selectedProvider.name.split(" ")[0]}</div>
+                  <div className="checkin-banner-sub">Started {new Date(activeCheckin.checked_in_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+                </div>
+                <button className="checkin-end-btn" onClick={endCheckin}>End Job</button>
+              </div>
+            )}
+
+            {/* Safety Section */}
+            {selectedProvider.isReal && (
+              <div className="safety-section">
+                <div className="safety-section-title"><Shield size={14} strokeWidth={2} />Safety Options</div>
+                {trustedContact && (
+                  <div className="trusted-contact-bar">
+                    <CheckCircle size={16} strokeWidth={2} style={{ color: "#00a855", flexShrink: 0 }} />
+                    <div className="trusted-contact-info">
+                      <div className="trusted-contact-name">{trustedContact.name}</div>
+                      <div className="trusted-contact-phone">Trusted contact · {trustedContact.phone}</div>
+                    </div>
+                  </div>
+                )}
+                {!activeCheckin && (
+                  <button className="safety-btn" onClick={() => startCheckin(selectedProvider)} disabled={checkinLoading}>
+                    <CheckCircle size={14} strokeWidth={2} />{checkinLoading ? "Starting..." : "Check In — Provider is Here"}
+                  </button>
+                )}
+                <button className="safety-btn" onClick={() => { setTcName(trustedContact?.name || ""); setTcPhone(trustedContact?.phone || ""); setShowTrustedModal(true); }}>
+                  <User size={14} strokeWidth={2} />{trustedContact ? "Update Trusted Contact" : "Add Trusted Contact"}
+                </button>
+                <button className="safety-btn" onClick={() => { setReportTarget(selectedProvider); setReportSuccess(false); setShowReportModal(true); }}>
+                  <X size={14} strokeWidth={2} />Report this Provider
+                </button>
+              </div>
+            )}
 
             {/* Reviews Section */}
             <div className="reviews-section">
@@ -2132,6 +2303,14 @@ export default function App() {
                     <h3>{adminTab === "pending" ? "No pending providers" : "No providers found"}</h3>
                   </div>
                 )}
+
+                {/* Reports section */}
+                <div style={{ margin: "16px 16px 0", background: "#fff", borderRadius: 16, padding: 16, border: "1px solid rgba(255,59,59,0.15)" }}>
+                  <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 15, color: "#ff6b6b", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Shield size={16} strokeWidth={2} /> Provider Reports
+                  </div>
+                  <div style={{ fontSize: 13, color: "#888" }}>View all provider reports in Supabase → Table Editor → reports table.</div>
+                </div>
               </div>
             )}
           </div>
@@ -2592,6 +2771,91 @@ export default function App() {
         )}
 
         {/* BOTTOM BAR */}
+        {/* SOS FLOATING BUTTON */}
+        {view !== "landing" && view !== "auth" && (
+          <button className="sos-btn" onClick={() => setShowSOS(true)}>
+            <span className="sos-btn-label">SOS</span>
+          </button>
+        )}
+
+        {/* SOS MODAL */}
+        {showSOS && (
+          <div className="sos-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setShowSOS(false); }}>
+            <div className="sos-modal">
+              <div className="sos-modal-title">🚨 Emergency SOS</div>
+              <div className="sos-modal-sub">
+                If you feel unsafe or are in danger, use these options immediately.
+                {trustedContact && <><br/><br/>Your trusted contact <strong>{trustedContact.name}</strong> ({trustedContact.phone}) will be alerted.</>}
+              </div>
+              <a href="tel:199" style={{ textDecoration: "none" }}>
+                <button className="sos-action-btn sos-call-btn">📞 Call Emergency (199)</button>
+              </a>
+              <a href="tel:112" style={{ textDecoration: "none" }}>
+                <button className="sos-action-btn sos-call-btn" style={{ background: "#cc2020" }}>📞 Call Police (112)</button>
+              </a>
+              {trustedContact && (
+                <a href={`tel:${trustedContact.phone}`} style={{ textDecoration: "none" }}>
+                  <button className="sos-action-btn sos-sms-btn">📱 Call {trustedContact.name}</button>
+                </a>
+              )}
+              <button className="reg-btn-outline" onClick={() => setShowSOS(false)}>Close</button>
+            </div>
+          </div>
+        )}
+
+        {/* REPORT MODAL */}
+        {showReportModal && reportTarget && (
+          <div className="report-modal-overlay" onClick={e => { if (e.target === e.currentTarget) { setShowReportModal(false); setReportSuccess(false); setReportReason(""); setReportDetails(""); } }}>
+            <div className="report-modal">
+              {reportSuccess ? (
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><CheckCircle size={48} strokeWidth={1.4} color="#D4A846" /></div>
+                  <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 8, color: "#1A1400" }}>Report Submitted</div>
+                  <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>We'll review your report and take action within 24 hours.</div>
+                  <button className="reg-btn" onClick={() => { setShowReportModal(false); setReportSuccess(false); setReportReason(""); setReportDetails(""); }}>Done</button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, marginBottom: 4, color: "#1A1400" }}>Report {reportTarget.name.split(" ")[0]}</div>
+                  <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Help keep HandyNG safe. Your report is anonymous.</div>
+                  <div style={{ fontSize: 12, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10, fontWeight: 600 }}>Reason</div>
+                  {["Suspicious behavior", "Fraud or scam", "Harassment", "Fake profile", "Did not show up", "Other"].map(reason => (
+                    <div key={reason} className={`report-reason-option ${reportReason === reason ? "selected" : ""}`} onClick={() => setReportReason(reason)}>{reason}</div>
+                  ))}
+                  <div className="field-group" style={{ marginTop: 12 }}>
+                    <label className="field-label">Additional details (optional)</label>
+                    <textarea className="field-textarea" placeholder="Describe what happened..." value={reportDetails} onChange={e => setReportDetails(e.target.value)} maxLength={300} />
+                  </div>
+                  <button className="reg-btn" style={{ background: "#ff3b3b" }} onClick={submitReport} disabled={reportSubmitting || !reportReason}>
+                    {reportSubmitting ? "Submitting..." : "Submit Report"}
+                  </button>
+                  <button className="reg-btn-outline" onClick={() => { setShowReportModal(false); setReportReason(""); setReportDetails(""); }}>Cancel</button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TRUSTED CONTACT MODAL */}
+        {showTrustedModal && (
+          <div className="report-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setShowTrustedModal(false); }}>
+            <div className="report-modal">
+              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, marginBottom: 4, color: "#1A1400" }}>Trusted Contact</div>
+              <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Add someone who should be notified in case of emergency.</div>
+              <div className="field-group">
+                <label className="field-label">Full Name</label>
+                <input className="field-input" placeholder="e.g. Mum, Brother, Friend" value={tcName} onChange={e => setTcName(e.target.value)} />
+              </div>
+              <div className="field-group">
+                <label className="field-label">Phone Number</label>
+                <input className="field-input" placeholder="08012345678" value={tcPhone} onChange={e => setTcPhone(e.target.value)} type="tel" />
+              </div>
+              <button className="reg-btn" onClick={saveTrustedContact} disabled={tcSaving || !tcName.trim() || !tcPhone.trim()}>{tcSaving ? "Saving..." : "Save Contact"}</button>
+              <button className="reg-btn-outline" onClick={() => setShowTrustedModal(false)}>Cancel</button>
+            </div>
+          </div>
+        )}
+
         {view !== "chat" && view !== "landing" && (
           <div className="bottom-bar">
             <button className={`bottom-tab ${view === "home" ? "active" : ""}`} onClick={() => setView("home")}>
