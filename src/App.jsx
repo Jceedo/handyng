@@ -80,6 +80,16 @@ export default function App() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingSending, setBookingSending] = useState(false);
 
+  // Provider dashboard state
+  const [providerProfile, setProviderProfile] = useState(null);
+  const [loadingProviderProfile, setLoadingProviderProfile] = useState(false);
+  const [dashboardReviews, setDashboardReviews] = useState([]);
+  const [togglingAvail, setTogglingAvail] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [editSuccess, setEditSuccess] = useState(false);
+
   // Reviews state
   const [reviews, setReviews] = useState({});
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -168,6 +178,7 @@ export default function App() {
       price: form.price,
       price_unit: form.priceUnit,
       photo_url: photoPreview || null,
+      user_id: user?.id || null,
     }]);
     setRegLoading(false);
     if (error) { alert("Something went wrong. Please try again."); return; }
@@ -783,6 +794,43 @@ export default function App() {
     .star-pick:hover { transform: scale(1.2); }
     .rating-label { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; font-weight: 500; min-height: 20px; }
 
+    /* ── PROVIDER DASHBOARD ── */
+    .dashboard { padding: 0 0 100px; }
+    .dashboard-hero { background: linear-gradient(135deg, #1A1400, #3a2e00); padding: 32px 20px 24px; color: #F5EDD8; position: relative; overflow: hidden; }
+    .dashboard-hero::after { content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(212,168,70,0.15); }
+    .dashboard-hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .dashboard-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; color: rgba(245,237,216,0.6); text-transform: uppercase; letter-spacing: 0.08em; }
+    .dashboard-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: #F5EDD8; margin-bottom: 4px; }
+    .dashboard-service { font-size: 13px; color: #D4A846; margin-bottom: 16px; }
+    .avail-toggle { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.08); border-radius: 100px; padding: 8px 16px; cursor: pointer; border: none; color: #F5EDD8; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .avail-toggle:hover { background: rgba(255,255,255,0.15); }
+    .avail-toggle-dot { width: 10px; height: 10px; border-radius: 50%; transition: background 0.2s; }
+    .avail-toggle-dot.on { background: #D4A846; box-shadow: 0 0 8px #D4A846; }
+    .avail-toggle-dot.off { background: #888; }
+
+    .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(0,0,0,0.06); border-top: 1px solid rgba(0,0,0,0.06); }
+    .dashboard-stat { padding: 16px 12px; text-align: center; background: #fff; }
+    .dashboard-stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #D4A846; }
+    .dashboard-stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+
+    .dashboard-section { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.06); background: #fff; margin-bottom: 8px; }
+    .dashboard-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .dashboard-section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #1A1400; }
+    .edit-btn { padding: 6px 14px; background: rgba(212,168,70,0.1); border: 1px solid rgba(212,168,70,0.3); border-radius: 100px; font-size: 12px; color: #D4A846; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .edit-btn:hover { background: rgba(212,168,70,0.2); }
+
+    .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 12px; color: #aaa; font-weight: 500; }
+    .info-value { font-size: 14px; color: #1A1400; font-weight: 500; text-align: right; max-width: 60%; }
+
+    .success-toast { background: rgba(0,200,100,0.1); border: 1px solid rgba(0,200,100,0.3); border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #00a855; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    .not-provider-card { margin: 20px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; padding: 28px 20px; text-align: center; }
+    .not-provider-icon { margin-bottom: 16px; display: flex; justify-content: center; }
+    .not-provider-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 8px; color: #1A1400; }
+    .not-provider-sub { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 24px; }
+
     /* ── AUTH ── */
     .auth-container { padding: 40px 24px 100px; display: flex; flex-direction: column; min-height: calc(100vh - 56px); }
     .auth-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px; margin-bottom: 6px; }
@@ -1036,6 +1084,89 @@ export default function App() {
     return avg.toFixed(1);
   };
 
+  const fetchProviderProfile = async () => {
+    if (!user) return;
+    setLoadingProviderProfile(true);
+    let found = null;
+
+    // Primary: match by user_id (works for everyone going forward)
+    const { data: byUserId } = await supabase
+      .from("providers")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+    if (byUserId) found = byUserId;
+
+    // Fallback: match by name (for existing registrations before user_id was added)
+    if (!found) {
+      const userName = (user.user_metadata?.full_name || "").trim();
+      if (userName) {
+        const { data } = await supabase
+          .from("providers")
+          .select("*")
+          .ilike("name", `%${userName}%`);
+        if (data && data.length > 0) {
+          found = data[0];
+          // Retroactively link this profile to the user
+          await supabase.from("providers").update({ user_id: user.id }).eq("id", found.id);
+        }
+      }
+    }
+
+    if (found) {
+      setProviderProfile(found);
+      setEditForm(found);
+      const { data: revData } = await supabase
+        .from("reviews")
+        .select("*")
+        .eq("provider_id", String(found.id))
+        .order("created_at", { ascending: false });
+      if (revData) setDashboardReviews(revData);
+    }
+    setLoadingProviderProfile(false);
+  };
+
+  const toggleAvailability = async () => {
+    if (!providerProfile) return;
+    setTogglingAvail(true);
+    const newAvail = !providerProfile.available;
+    const { error } = await supabase
+      .from("providers")
+      .update({ available: newAvail })
+      .eq("id", providerProfile.id);
+    if (!error) setProviderProfile(prev => ({ ...prev, available: newAvail }));
+    setTogglingAvail(false);
+  };
+
+  const saveEditProfile = async () => {
+    if (!providerProfile) return;
+    setEditSaving(true);
+    const { error } = await supabase
+      .from("providers")
+      .update({
+        name: editForm.name,
+        phone: editForm.phone,
+        area: editForm.area,
+        location: editForm.location,
+        bio: editForm.bio,
+        price: editForm.price,
+        price_unit: editForm.price_unit,
+        experience: editForm.experience,
+      })
+      .eq("id", providerProfile.id);
+    setEditSaving(false);
+    if (!error) {
+      setProviderProfile(prev => ({ ...prev, ...editForm }));
+      setEditMode(false);
+      setEditSuccess(true);
+      setTimeout(() => setEditSuccess(false), 3000);
+    }
+  };
+
+  useEffect(() => {
+    if (view === "dashboard") fetchProviderProfile();
+  }, [view, user]);
+
   const serviceLabel = (id) => SERVICES.find(s => s.id === id)?.label || id;
 
   return (
@@ -1061,6 +1192,9 @@ export default function App() {
           )}
           {view === "bookings" && (
             <div style={{ fontSize: 13, color: "#666" }}>My Bookings</div>
+          )}
+          {view === "dashboard" && (
+            <div style={{ fontSize: 13, color: "#D4A846" }}>Provider Dashboard</div>
           )}
           {view === "profile" && selectedProvider && (
             <div style={{ fontSize: 13, color: "#666" }}>{serviceLabel(selectedProvider.service)}</div>
@@ -1633,6 +1767,155 @@ export default function App() {
           </div>
         )}
 
+        {/* ── PROVIDER DASHBOARD ── */}
+        {view === "dashboard" && (
+          <div style={{ overflowY: "auto", height: "calc(100vh - 56px)", background: "#F5F5F0" }}>
+            {!user ? (
+              <div className="not-provider-card" style={{ marginTop: 40 }}>
+                <div className="not-provider-icon"><Lock size={48} strokeWidth={1.4} color="#D4A846" /></div>
+                <div className="not-provider-title">Login Required</div>
+                <div className="not-provider-sub">Log in to access your provider dashboard.</div>
+                <button className="reg-btn" onClick={() => { setAuthView("login"); setView("auth"); }}>Log In</button>
+              </div>
+            ) : loadingProviderProfile ? (
+              <div className="empty-state"><div className="empty-state-icon"><Clock size={48} strokeWidth={1.4} style={{color:"#D4A846", margin:"0 auto"}} /></div><h3>Loading dashboard...</h3></div>
+            ) : !providerProfile ? (
+              <div className="not-provider-card" style={{ marginTop: 40 }}>
+                <div className="not-provider-icon"><Wrench size={48} strokeWidth={1.4} color="#D4A846" /></div>
+                <div className="not-provider-title">Not Registered as Provider</div>
+                <div className="not-provider-sub">You haven't registered as a service provider yet. Register to start getting hired on HandyNG.</div>
+                <button className="reg-btn" onClick={() => { setView("register"); setRegStep(1); setRegSuccess(false); }}>Register as Provider</button>
+              </div>
+            ) : (
+              <div className="dashboard">
+                {/* Hero */}
+                <div className="dashboard-hero">
+                  <div className="dashboard-hero-top">
+                    <div>
+                      <div className="dashboard-title">Provider Dashboard</div>
+                      <div className="dashboard-name">{providerProfile.name}</div>
+                      <div className="dashboard-service">{serviceLabel(providerProfile.service)} · {providerProfile.area}, {providerProfile.location}</div>
+                    </div>
+                    <div style={{ width: 56, height: 56, borderRadius: 16, background: "#D4A846", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#1A1400", flexShrink: 0 }}>
+                      {providerProfile.name.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase()}
+                    </div>
+                  </div>
+                  <button className="avail-toggle" onClick={toggleAvailability} disabled={togglingAvail}>
+                    <span className={`avail-toggle-dot ${providerProfile.available ? "on" : "off"}`} />
+                    {togglingAvail ? "Updating..." : providerProfile.available ? "Available for work" : "Currently unavailable"}
+                  </button>
+                </div>
+
+                {/* Stats */}
+                <div className="dashboard-stats">
+                  <div className="dashboard-stat">
+                    <div className="dashboard-stat-num">{providerProfile.rating?.toFixed(1) || "5.0"}★</div>
+                    <div className="dashboard-stat-label">Rating</div>
+                  </div>
+                  <div className="dashboard-stat">
+                    <div className="dashboard-stat-num">{providerProfile.jobs || 0}</div>
+                    <div className="dashboard-stat-label">Jobs Done</div>
+                  </div>
+                  <div className="dashboard-stat">
+                    <div className="dashboard-stat-num">{dashboardReviews.length}</div>
+                    <div className="dashboard-stat-label">Reviews</div>
+                  </div>
+                </div>
+
+                {/* Profile Info */}
+                <div className="dashboard-section" style={{ marginTop: 8 }}>
+                  <div className="dashboard-section-header">
+                    <div className="dashboard-section-title">Profile Details</div>
+                    <button className="edit-btn" onClick={() => { setEditMode(!editMode); setEditSuccess(false); }}>
+                      {editMode ? "Cancel" : "Edit Profile"}
+                    </button>
+                  </div>
+
+                  {editSuccess && (
+                    <div className="success-toast"><CheckCircle size={16} strokeWidth={2} />Profile updated successfully!</div>
+                  )}
+
+                  {editMode ? (
+                    <>
+                      <div className="field-group">
+                        <label className="field-label">Full Name</label>
+                        <input className="field-input" value={editForm.name || ""} onChange={e => setEditForm(p => ({...p, name: e.target.value}))} />
+                      </div>
+                      <div className="field-group">
+                        <label className="field-label">Phone</label>
+                        <input className="field-input" value={editForm.phone || ""} onChange={e => setEditForm(p => ({...p, phone: e.target.value}))} type="tel" />
+                      </div>
+                      <div className="field-group">
+                        <label className="field-label">City</label>
+                        <select className="field-select" value={editForm.location || ""} onChange={e => setEditForm(p => ({...p, location: e.target.value}))}>
+                          {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
+                        </select>
+                      </div>
+                      <div className="field-group">
+                        <label className="field-label">Area</label>
+                        <input className="field-input" value={editForm.area || ""} onChange={e => setEditForm(p => ({...p, area: e.target.value}))} />
+                      </div>
+                      <div className="field-group">
+                        <label className="field-label">Bio</label>
+                        <textarea className="field-textarea" value={editForm.bio || ""} onChange={e => setEditForm(p => ({...p, bio: e.target.value}))} maxLength={200} />
+                        <div className="char-count">{(editForm.bio || "").length}/200</div>
+                      </div>
+                      <div className="field-group">
+                        <label className="field-label">Rate (₦)</label>
+                        <div className="price-row">
+                          <input className="field-input" value={editForm.price || ""} onChange={e => setEditForm(p => ({...p, price: e.target.value.replace(/\D/g,"")}))} type="tel" />
+                          <div className="price-unit-toggle">
+                            {["hr","visit","job"].map(u => (
+                              <button key={u} className={`price-unit-btn ${editForm.price_unit === u ? "active" : ""}`} onClick={() => setEditForm(p => ({...p, price_unit: u}))}>/ {u}</button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <button className="reg-btn" onClick={saveEditProfile} disabled={editSaving}>{editSaving ? "Saving..." : "Save Changes"}</button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="info-row"><span className="info-label">Name</span><span className="info-value">{providerProfile.name}</span></div>
+                      <div className="info-row"><span className="info-label">Phone</span><span className="info-value">{providerProfile.phone}</span></div>
+                      <div className="info-row"><span className="info-label">Service</span><span className="info-value">{serviceLabel(providerProfile.service)}</span></div>
+                      <div className="info-row"><span className="info-label">Location</span><span className="info-value">{providerProfile.area}, {providerProfile.location}</span></div>
+                      <div className="info-row"><span className="info-label">Experience</span><span className="info-value">{providerProfile.experience} years</span></div>
+                      <div className="info-row"><span className="info-label">Rate</span><span className="info-value" style={{color:"#D4A846", fontWeight:700}}>₦{providerProfile.price}/{providerProfile.price_unit}</span></div>
+                      <div className="info-row"><span className="info-label">Bio</span><span className="info-value">{providerProfile.bio}</span></div>
+                    </>
+                  )}
+                </div>
+
+                {/* Reviews */}
+                <div className="dashboard-section">
+                  <div className="dashboard-section-header">
+                    <div className="dashboard-section-title">My Reviews</div>
+                    <span style={{ fontSize: 12, color: "#aaa" }}>{dashboardReviews.length} total</span>
+                  </div>
+                  {dashboardReviews.length === 0 ? (
+                    <div className="no-reviews">No reviews yet. Complete jobs to get reviews.</div>
+                  ) : (
+                    dashboardReviews.map(review => (
+                      <div key={review.id} className="review-card">
+                        <div className="review-card-top">
+                          <div className="review-author">{review.customer_name}</div>
+                          <div className="review-date">{new Date(review.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short" })}</div>
+                        </div>
+                        <div className="review-stars">
+                          {[1,2,3,4,5].map(s => (
+                            <Star key={s} size={14} strokeWidth={0} fill={s <= review.rating ? "#D4A846" : "#ddd"} />
+                          ))}
+                        </div>
+                        {review.comment && <div className="review-comment">"{review.comment}"</div>}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── AUTH ── */}
         {view === "auth" && (
           <div style={{ overflowY: "auto", height: "calc(100vh - 56px)" }}>
@@ -1702,6 +1985,11 @@ export default function App() {
                   <div className="profile-menu-item" onClick={() => setView("browse")}>
                     <span className="profile-menu-icon"><Search size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
                     <span className="profile-menu-label">Browse Services</span>
+                    <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
+                  </div>
+                  <div className="profile-menu-item" onClick={() => setView("dashboard")}>
+                    <span className="profile-menu-icon"><Cog size={20} strokeWidth={1.8} style={{color:"#D4A846"}} /></span>
+                    <span className="profile-menu-label">Provider Dashboard</span>
                     <ChevronRight size={16} strokeWidth={2} style={{color:"#bbb"}} />
                   </div>
                   <div className="profile-menu-item" onClick={() => setView("register")}>
